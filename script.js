@@ -1,7 +1,6 @@
 // Code examples with syntax highlighting
 const examples = {
-  hello: `// Compile with: ./luma main.lx -l 
-@module "main"
+  hello: `@module "main"
 
 @use "io" as io
 
