@@ -1,10 +1,11 @@
 // Code examples with syntax highlighting
 const examples = {
-  hello: `@module "main"
+  hello: `// Compile with: ./luma main.lx -l 
+@module "main"
 
 @use "io" as io
 
-pub const main = fn () int {
+pub const main -> fn () int {
   let message: str = "Hello, Luma!";
   io::print_str("%s\\\\n", [message]);
   return 0;
@@ -14,12 +15,12 @@ pub const main = fn () int {
 
 @use "io" as io
 
-const Point = struct {
+const Point -> struct {
   x: int,
   y: int,
 };
 
-pub const main = fn () int {
+pub const main -> fn () int {
   let origin: Point = Point { x: 0, y: 0 };
   io::print_int("Point: (%d, %d)\\\\n", [origin.x, origin.y]);
   return 0;
@@ -29,7 +30,7 @@ pub const main = fn () int {
 
 @use "io" as io
 
-pub const main = fn () int {
+pub const main -> fn () int {
   let ptr: *int = cast<*int>(alloc(sizeof<int>));
   defer free(ptr);
   *ptr = 42;
@@ -41,12 +42,12 @@ pub const main = fn () int {
 
 @use "io" as io
 
-const fibonacci = fn (n: int) int {
+const fibonacci -> fn (n: int) int {
   if (n <= 1) return n;
   return fibonacci(n - 1) + fibonacci(n - 2);
 }
 
-pub const main = fn () int {
+pub const main -> fn () int {
   io::print_int("Fib(10): %d\\\\n", [fibonacci(10)]);
   return 0;
 }`
