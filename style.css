@@ -22,7 +22,7 @@
 
 [data-theme="dark"] {
   --bg: #111;
-  --text: #fafafa;
+  --text: #F5F5F5;
   --border: #333;
   
   /* Dark mode syntax colors */
@@ -367,6 +367,7 @@ footer {
   }
 
 }
+
 
 
 
