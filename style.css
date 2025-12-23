@@ -5,7 +5,7 @@
 }
 
 :root {
-  --bg: #fafafa;
+  --bg: #1e1e1e;;
   --text: #111;
   --accent: #0066ff;
   --border: #ddd;
@@ -365,4 +365,5 @@ footer {
     flex-direction: column;
     text-align: center;
   }
+
 }
