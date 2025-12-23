@@ -5,7 +5,7 @@
 }
 
 :root {
-  --bg: #dadada;
+  --bg: #E0E0E0;
   --text: #111;
   --accent: #0066ff;
   --border: #ddd;
@@ -367,6 +367,7 @@ footer {
   }
 
 }
+
 
 
 
