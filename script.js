@@ -189,5 +189,27 @@ tabBtns.forEach(btn => {
   });
 });
 
-// Initialize on load
+function getSeasonalMascot() {
+  const now = new Date();
+  const month = now.getMonth(); // 0-11 (0 = January, 11 = December)
+  const day = now.getDate();
+  
+  // Show Christmas mascot during December
+  if (month === 11) {
+    return 'img/luma_christmas.png';
+  }
+  
+  // Default mascot
+  return 'img/luma.png';
+}
+
+// Apply the seasonal mascot on page load
+function initSeasonalMascot() {
+  const mascotImg = document.querySelector('.mascot');
+  if (mascotImg) {
+    mascotImg.src = getSeasonalMascot();
+  }
+}
+
+initSeasonalMascot();
 initExamples();
