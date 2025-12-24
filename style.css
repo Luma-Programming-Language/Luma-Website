@@ -5,8 +5,8 @@
 }
 
 :root {
-  --bg: #F2F6FA;
-  --text: #111;
+  --bg: #FAFAFA;
+  --text: #2C2C2C;
   --accent: #0066ff;
   --border: #ddd;
   
@@ -50,12 +50,44 @@ body {
   padding: 3rem 2rem;
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
 /* Header */
 header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 8rem;
+  animation: fadeIn 0.6s ease-out;
 }
 
 .logo {
@@ -97,6 +129,51 @@ nav a:hover {
   opacity: 0.6;
 }
 
+/* Version Badge */
+.version-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: var(--text);
+  color: var(--bg);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-decoration: none;
+  transition: all 0.3s ease;
+  border: 2px solid var(--text);
+  position: relative;
+  overflow: hidden;
+}
+
+.version-badge:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.version-badge.loading {
+  pointer-events: none;
+}
+
+.version-badge.loading .version-text {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.version-prefix {
+  opacity: 0.7;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.version-text {
+  font-weight: 700;
+}
+
+.version-badge.loaded {
+  animation: fadeIn 0.5s ease-out;
+}
+
 /* Hero */
 .hero {
   margin-bottom: 8rem;
@@ -107,14 +184,16 @@ nav a:hover {
 
 .hero-content {
   flex: 1;
+  animation: slideIn 0.8s ease-out;
 }
 
 .mascot-container {
   flex-shrink: 0;
+  animation: fadeIn 1s ease-out 0.2s both;
 }
 
 .mascot {
-  width: 300px;
+  width: 280px;
   height: auto;
   display: block;
 }
@@ -139,6 +218,7 @@ h1 {
   display: flex;
   gap: 1.5rem;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .btn {
@@ -150,13 +230,15 @@ h1 {
   color: var(--text);
   background: none;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   display: inline-block;
 }
 
 .btn:hover {
   background: var(--text);
   color: var(--bg);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
 .btn-primary {
@@ -172,6 +254,7 @@ h1 {
 /* Code */
 .code-section {
   margin-bottom: 8rem;
+  animation: fadeIn 1s ease-out 0.4s both;
 }
 
 .example-tabs {
@@ -189,13 +272,14 @@ h1 {
   border: 2px solid var(--text);
   color: var(--text);
   cursor: pointer;
-  transition: all 0.2s;
+  transition: all 0.3s ease;
   font-family: inherit;
 }
 
 .tab-btn:hover {
   background: var(--text);
   color: var(--bg);
+  transform: translateY(-2px);
 }
 
 .tab-btn.active {
@@ -208,10 +292,12 @@ h1 {
   padding: 2rem;
   background: var(--bg);
   position: relative;
+  transition: all 0.3s ease;
 }
 
 .code-content {
   display: none;
+  animation: fadeIn 0.4s ease-out;
 }
 
 .code-content.active {
@@ -226,6 +312,7 @@ h1 {
   padding: 0 0.5rem;
   font-size: 0.85rem;
   font-weight: 600;
+  transition: all 0.3s ease;
 }
 
 pre {
@@ -255,6 +342,15 @@ code {
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 3rem;
   margin-bottom: 8rem;
+  animation: fadeIn 1s ease-out 0.6s both;
+}
+
+.feature {
+  transition: transform 0.3s ease;
+}
+
+.feature:hover {
+  transform: translateY(-5px);
 }
 
 .feature h3 {
@@ -276,6 +372,7 @@ footer {
   align-items: center;
   flex-wrap: wrap;
   gap: 1rem;
+  animation: fadeIn 1s ease-out 0.8s both;
 }
 
 .social {
@@ -287,11 +384,12 @@ footer {
   color: var(--text);
   text-decoration: none;
   font-size: 1.25rem;
-  transition: opacity 0.2s;
+  transition: all 0.3s ease;
 }
 
 .social a:hover {
   opacity: 0.6;
+  transform: translateY(-2px);
 }
 
 @media (max-width: 768px) {
@@ -338,6 +436,11 @@ footer {
     text-align: center;
   }
 
+  .version-badge {
+    width: 100%;
+    justify-content: center;
+  }
+
   .code-wrapper {
     padding: 1.5rem;
   }
@@ -366,13 +469,4 @@ footer {
     flex-direction: column;
     text-align: center;
   }
-
 }
-
-
-
-
-
-
-
-

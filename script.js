@@ -1,4 +1,3 @@
-// Code examples with syntax highlighting
 const examples = {
   hello: `@module "main"
 
@@ -6,7 +5,7 @@ const examples = {
 
 pub const main -> fn () int {
   let message: str = "Hello, Luma!";
-  io::print_str("%s\\\\n", [message]);
+  io::print_str("%s\\n", [message]);
   return 0;
 }`,
 
@@ -21,7 +20,7 @@ const Point -> struct {
 
 pub const main -> fn () int {
   let origin: Point = Point { x: 0, y: 0 };
-  io::print_int("Point: (%d, %d)\\\\n", [origin.x, origin.y]);
+  io::print_int("Point: (%d, %d)\\n", [origin.x, origin.y]);
   return 0;
 }`,
 
@@ -33,7 +32,7 @@ pub const main -> fn () int {
   let ptr: *int = cast<*int>(alloc(sizeof<int>));
   defer free(ptr);
   *ptr = 42;
-  io::print_int("Value: %d\\\\n", [*ptr]);
+  io::print_int("Value: %d\\n", [*ptr]);
   return 0;
 }`,
 
@@ -47,20 +46,16 @@ const fibonacci -> fn (n: int) int {
 }
 
 pub const main -> fn () int {
-  io::print_int("Fib(10): %d\\\\n", [fibonacci(10)]);
+  io::print_int("Fib(10): %d\\n", [fibonacci(10)]);
   return 0;
 }`
 };
 
 // Syntax highlighter
 function highlight(code) {
-  // Use a token-based approach to avoid conflicts
   const tokens = [];
-  let position = 0;
   
-  // Helper to add a token
   function addToken(match, type, index) {
-    // Check if this position is already tokenized
     for (let token of tokens) {
       if (index >= token.start && index < token.end) return;
     }
@@ -72,65 +67,53 @@ function highlight(code) {
     });
   }
   
-  // 1. Find strings (highest priority)
   const stringRegex = /"([^"\\]|\\.)*"/g;
   let match;
   while ((match = stringRegex.exec(code)) !== null) {
     addToken(match[0], 'string', match.index);
   }
   
-  // 2. Find comments
   const commentRegex = /\/\/.*/g;
   while ((match = commentRegex.exec(code)) !== null) {
     addToken(match[0], 'comment', match.index);
   }
   
-  // 3. Module directives
   const moduleRegex = /@(module|use)\b/g;
   while ((match = moduleRegex.exec(code)) !== null) {
     addToken(match[0], 'module', match.index);
   }
   
-  // 4. Function calls
   const functionRegex = /\b(alloc|free|sizeof|cast|print_str|print_int|fibonacci)(?=\s*\()/g;
   while ((match = functionRegex.exec(code)) !== null) {
     addToken(match[1], 'function', match.index);
   }
   
-  // 5. Keywords
   const keywordRegex = /\b(pub|const|fn|let|struct|defer|if|return|as)\b/g;
   while ((match = keywordRegex.exec(code)) !== null) {
     addToken(match[1], 'keyword', match.index);
   }
   
-  // 6. Types
   const typeRegex = /\b(int|str|void|Point)\b/g;
   while ((match = typeRegex.exec(code)) !== null) {
     addToken(match[1], 'type', match.index);
   }
   
-  // 7. Numbers
   const numberRegex = /\b\d+\b/g;
   while ((match = numberRegex.exec(code)) !== null) {
     addToken(match[0], 'number', match.index);
   }
   
-  // Sort tokens by position
   tokens.sort((a, b) => a.start - b.start);
   
-  // Build the highlighted string
   let result = '';
   let lastIndex = 0;
   
   for (let token of tokens) {
-    // Add any text before this token
     result += code.substring(lastIndex, token.start);
-    // Add the highlighted token
     result += `<span class="${token.type}">${token.text}</span>`;
     lastIndex = token.end;
   }
   
-  // Add any remaining text
   result += code.substring(lastIndex);
   
   return result;
@@ -147,6 +130,49 @@ function initExamples() {
     const highlighted = highlight(code);
     document.getElementById(`code-${key}`).innerHTML = highlighted;
   });
+}
+
+// Fetch latest version from GitHub
+async function fetchLatestVersion() {
+  const versionBadge = document.getElementById('versionBadge');
+  const versionText = document.getElementById('versionText');
+  
+  try {
+    const response = await fetch('https://api.github.com/repos/TheDevConnor/Luma/releases/latest');
+    const data = await response.json();
+    
+    if (data.tag_name) {
+      versionText.textContent = data.tag_name;
+      versionBadge.classList.remove('loading');
+      versionBadge.href = data.html_url;
+    } else {
+      versionText.textContent = 'v1.0.0';
+      versionBadge.classList.remove('loading');
+    }
+  } catch (error) {
+    console.error('Failed to fetch version:', error);
+    versionText.textContent = 'Version';
+    versionBadge.classList.remove('loading');
+  }
+}
+
+// Seasonal mascot switcher
+function getSeasonalMascot() {
+  const now = new Date();
+  const month = now.getMonth();
+  
+  if (month === 11) {
+    return 'img/luma_christmas.png';
+  }
+  
+  return 'img/luma.png';
+}
+
+function initSeasonalMascot() {
+  const mascotImg = document.querySelector('.mascot');
+  if (mascotImg) {
+    mascotImg.src = getSeasonalMascot();
+  }
 }
 
 // Theme Toggle
@@ -189,27 +215,7 @@ tabBtns.forEach(btn => {
   });
 });
 
-function getSeasonalMascot() {
-  const now = new Date();
-  const month = now.getMonth(); // 0-11 (0 = January, 11 = December)
-  const day = now.getDate();
-  
-  // Show Christmas mascot during December
-  if (month === 11) {
-    return 'img/luma_christmas.png';
-  }
-  
-  // Default mascot
-  return 'img/luma.png';
-}
-
-// Apply the seasonal mascot on page load
-function initSeasonalMascot() {
-  const mascotImg = document.querySelector('.mascot');
-  if (mascotImg) {
-    mascotImg.src = getSeasonalMascot();
-  }
-}
-
-initSeasonalMascot();
+// Initialize on load
 initExamples();
+initSeasonalMascot();
+fetchLatestVersion();
