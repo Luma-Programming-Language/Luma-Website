@@ -4,8 +4,8 @@ const examples = {
 @use "io" as io
 
 pub const main -> fn () int {
-  let message: str = "Hello, Luma!";
-  io::print_str("%s\\n", [message]);
+  let message: *byte = "Hello, Luma!";
+  io::print("%s\\n", [io::str_arg(message)]);
   return 0;
 }`,
 
@@ -20,7 +20,7 @@ const Point -> struct {
 
 pub const main -> fn () int {
   let origin: Point = Point { x: 0, y: 0 };
-  io::print_int("Point: (%d, %d)\\n", [origin.x, origin.y]);
+  io::print("Point: (%d, %d)\\n", [io::int_arg(origin.x), io::int_arg(origin.y)]);
   return 0;
 }`,
 
@@ -30,9 +30,9 @@ pub const main -> fn () int {
 
 pub const main -> fn () int {
   let ptr: *int = cast<*int>(alloc(sizeof<int>));
-  defer free(ptr);
+  defer { free(ptr); }
   *ptr = 42;
-  io::print_int("Value: %d\\n", [*ptr]);
+  io::print("Value: %d\\n", [io::int_arg(*ptr)]);
   return 0;
 }`,
 
@@ -46,9 +46,9 @@ const fibonacci -> fn (n: int) int {
 }
 
 pub const main -> fn () int {
-  io::print_int("Fib(10): %d\\n", [fibonacci(10)]);
+  io::print("Fib(10): %d\\n", [io::int_arg(fibonacci(10))]);
   return 0;
-}`
+}` 
 };
 
 // Syntax highlighter
