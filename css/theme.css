@@ -1,0 +1,21 @@
+:root {
+    --keyword: #b45309;
+    --type: #0e7490;
+    --string: #15803d;
+    --number: #a16207;
+    --comment: #a8a29e;
+    --function: #7c3aed;
+    --module: #be123c;
+    --accent: #d97706;
+}
+
+[data-theme="dark"] {
+    --keyword: #f59e0b;
+    --type: #2dd4bf;
+    --string: #fbbf24;
+    --number: #a3e635;
+    --comment: #78716c;
+    --function: #fcd34d;
+    --module: #fb7185;
+    --accent: #f59e0b;
+}

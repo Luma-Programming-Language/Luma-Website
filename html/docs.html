@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../assets/Luma-32x32.png" sizes="32x32" type="image/png">
+    <title>Luma Documentation</title>
+    <link rel="stylesheet" href="../css/theme.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/11.1.1/marked.min.js"></script>
+    <link rel="stylesheet" href="../css/docs_style.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <span>LUMA</span>
+        </div>
+        <div class="header-nav">
+            <button class="nav-btn active" onclick="showDocs()">Documentation</button>
+            <button class="nav-btn" onclick="showInstall()">Installing</button>
+            <button class="nav-btn" onclick="showStdLib()">Standard Library</button>
+            <button class="nav-btn" onclick="showHome()">Home</button>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search documentation..." class="search-input">
+            <div id="searchResults" class="search-results"></div>
+        </div>
+        <div class="header-links">
+            <a href="https://github.com/TheDevConnor/Luma" target="_blank" class="header-link">
+                <span>GitHub</span>
+            </a>
+            <a href="https://discord.gg/gqnwasvqd9" target="_blank" class="header-link">
+                <span>Discord</span>
+            </a>
+        </div>
+        <div class="header-controls">
+            <button class="mobile-search-btn" onclick="toggleMobileSearch()">🔍</button>
+            <button class="mobile-menu-btn" onclick="toggleSidebar()">☰</button>
+            <button class="theme-toggle" onclick="toggleTheme()">◐</button>
+        </div>
+    </header>
+
+    <div class="mobile-search-overlay" id="mobileSearchOverlay">
+        <div class="mobile-search-container">
+            <input type="text" id="mobileSearchInput" placeholder="Search documentation..." class="mobile-search-input">
+            <button class="mobile-search-close" onclick="toggleMobileSearch()">✕</button>
+        </div>
+        <div id="mobileSearchResults" class="mobile-search-results"></div>
+    </div>
+
+    <div class="container">
+        <aside class="sidebar" id="sidebar">
+            <nav id="toc">
+                <ul>
+                    <li><a href="#" onclick="showDefaultContent()">Home</a></li>
+                </ul>
+            </nav>
+        </aside>
+
+        <main class="content" id="content">
+            <div class="loading">Loading documentation...</div>
+        </main>
+    </div>
+
+    <button class="scroll-top" id="scrollTop" onclick="window.scrollTo({top: 0, behavior: 'smooth'})">↑</button>
+
+    <script src="../scripts/docs_script.js"></script>
+    <script src="../prism-luma.js"></script>
+</body>
+
+</html>
