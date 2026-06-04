@@ -259,22 +259,22 @@ nav a:hover {
     line-height: 1.7;
 }
 
-.mascot-section {
-    display: flex;
-    justify-content: center;
-    padding: 0rem 0 3rem 0;
+.example-with-mascot {
+    position: relative;
 }
 
-.mascot-section .mascot-container {
-    flex-shrink: 0;
-    line-height: 0;
-}
+.window-mascot {
+    position: absolute;
 
-.mascot-section .mascot {
-    width: 300px;
+    width: 90px;
     height: auto;
-    display: block;
-    opacity: 1;
+
+    top: -40px;
+    right: 20px;
+
+    z-index: 10;
+
+    pointer-events: none;
 }
 
 .book-examples h2 .mascot {

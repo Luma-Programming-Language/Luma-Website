@@ -28,14 +28,16 @@
         <div class="book-layout">
             <!-- Left (F-pattern): code examples first -->
             <aside class="book-examples">
-                <h2>Hello, World!</h2>
-                <pre><code class="language-luma">@module "main"
+                <div class="example-with-mascot">
+                    <img src="assets/Luma-Window.png" alt="Luma mascot" class="window-mascot">
+                    <h2>Hello, World!</h2>
+                    <pre><code class="language-luma">@module "main"
 
 pub const main -> fn () int {
     output("Hello, Luma!\n");
     return 0;
 }</code></pre>
-
+                </div>
                 <h2>Data Types</h2>
                 <pre><code class="language-luma">const Point -> struct {
     x: int,
@@ -94,12 +96,6 @@ const main -> fn () int {
                         <p>Analysis happens during compilation with no runtime overhead.</p>
                     </div>
                 </section>
-
-                <div class="mascot-section">
-                    <span class="mascot-container">
-                        <img src="" alt="Luma mascot" class="mascot">
-                    </span>
-                </div>
             </div>
         </div>
 

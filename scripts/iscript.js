@@ -182,17 +182,6 @@ async function fetchLatestVersion() {
     }
 }
 
-function getSeasonalMascot() {
-    return 'assets/luma.png';
-}
-
-function initSeasonalMascot() {
-    const mascotImg = document.querySelector('.mascot');
-    if (mascotImg) {
-        mascotImg.src = getSeasonalMascot();
-    }
-}
-
 // Theme Toggle
 const themeBtn = document.getElementById('themeBtn');
 const html = document.documentElement;
@@ -227,5 +216,4 @@ document.addEventListener('keydown', (e) => {
 
 // Initialize on load
 syncHighlight();
-initSeasonalMascot();
 fetchLatestVersion();
