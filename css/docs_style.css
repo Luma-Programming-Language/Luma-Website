@@ -686,6 +686,28 @@ body {
     font-size: 0.95rem;
 }
 
+@view-transition {
+    navigation: auto;
+}
+
+::view-transition-old(root) {
+    animation: 0.3s ease-out both vt-out;
+}
+
+::view-transition-new(root) {
+    animation: 0.3s ease-out both vt-in;
+}
+
+@keyframes vt-out {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-8px); }
+}
+
+@keyframes vt-in {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
 /* ── Responsive ────────────────────────────────────────── */
 @media (max-width: 768px) {
     .sidebar {

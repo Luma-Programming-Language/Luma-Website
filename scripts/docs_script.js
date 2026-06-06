@@ -265,20 +265,22 @@ async function loadFromUrl(url) {
 
 // Theme toggle
 function toggleTheme() {
-    const body = document.body;
+    const html = document.documentElement;
     const btn = document.querySelector('.theme-toggle');
-    const currentTheme = body.getAttribute('data-theme');
+    const currentTheme = html.getAttribute('data-theme');
     const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
     
-    body.setAttribute('data-theme', newTheme);
+    html.setAttribute('data-theme', newTheme);
     btn.textContent = newTheme === 'dark' ? '◐' : '◑';
     localStorage.setItem('theme', newTheme);
 }
 
-// Load saved theme
-const savedTheme = localStorage.getItem('theme') || 'light';
-document.body.setAttribute('data-theme', savedTheme);
-document.querySelector('.theme-toggle').textContent = savedTheme === 'dark' ? '◐' : '◑';
+// Sync toggle button icon with current theme
+const themeToggleBtn = document.querySelector('.theme-toggle');
+if (themeToggleBtn) {
+    const currentTheme = document.documentElement.getAttribute('data-theme');
+    themeToggleBtn.textContent = currentTheme === 'dark' ? '◐' : '◑';
+}
 
 // Sidebar toggle for mobile
 function toggleSidebar() {
