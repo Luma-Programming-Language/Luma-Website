@@ -2,6 +2,36 @@
 
 Luma is a statically typed, compiled programming language designed for systems programming. It combines the low-level control of C with a strong type system and modern safety features that eliminate many common runtime errors.
 
+## Table of Contents
+
+- [Language Philosophy](#language-philosophy)
+- [Quick Start](#quick-start)
+- [Type System](#type-system)
+- [Generics](#generics)
+- [Top-Level Bindings with `const`](#top-level-bindings-with-const)
+- [Variables and Mutability](#variables-and-mutability)
+- [Functions](#functions)
+- [Name Resolution](#name-resolution)
+- [Control Flow](#control-flow)
+- [Switch Statements](#switch-statements)
+- [Module System](#module-system)
+- [Platform Directives](#platform-directives)
+- [Foreign Function Interface (FFI)](#foreign-function-interface-ffi)
+- [Built-in Functions](#built-in-functions)
+- [Type Casting System](#type-casting-system)
+- [Array Types](#array-types)
+- [String Literals and String Types](#string-literals-and-string-types)
+- [Pointer Arithmetic](#pointer-arithmetic)
+- [Visibility and Access Control](#visibility-and-access-control)
+- [Memory Management](#memory-management)
+- [Performance](#performance)
+- [Safety Features](#safety-features)
+- [Quick Reference](#quick-reference)
+
+---
+
+## Language Philosophy
+
 Luma is built on three core principles:
 
 - **Simplicity**: Minimal syntax with consistent patterns
@@ -67,6 +97,7 @@ This example shows:
 Luma provides a straightforward type system with both primitive and compound types.
 
 ### Primitive Types
+
 ```
 int      - Signed integer (64-bit)
 float    - Floating point (32-bit)
@@ -83,6 +114,7 @@ void     - No value (used for function return types and generic pointers)
 - There is no separate `str` type in Luma
 
 ### Type Modifiers & Operators
+
 ```
 *T       - Pointer type (declares a pointer to type T)
 [T; N]   - Array type (fixed-size array of N elements of type T)
@@ -493,6 +525,110 @@ const find_positive -> fn (numbers: *int, size: int) int {
 };
 ```
 
+### Function Types as First-Class Values
+
+Functions are first-class values — `fn` is a real type that can be stored in variables, passed as arguments, and returned.
+
+```luma
+// Declare a variable holding a function
+let op: fn (int, int) int = add;
+
+// Call through the variable
+let result: int = op(5, 3);
+```
+
+#### Function Type Syntax
+
+```
+fn (param_type, param_type, ...) return_type
+```
+
+Examples:
+
+```luma
+// Takes no args, returns void
+fn () void
+
+// Takes two ints, returns int
+fn (int, int) int
+
+// Takes a void pointer, returns a void pointer
+fn (*void) *void
+
+// Returning a pointer — * binds to the return type
+fn (int, int) *int      // function returning pointer to int
+```
+
+#### Assigning Functions to Variables
+
+A function name evaluates to its function type directly — no `&` needed:
+
+```luma
+const add -> fn (a: int, b: int) int { return a + b; }
+const sub -> fn (a: int, b: int) int { return a - b; }
+
+pub const main -> fn () int {
+    let op: fn (int, int) int = add;   // direct assignment
+    outputln(op(10, 3));                // 13
+
+    op = sub;                           // can be reassigned
+    outputln(op(10, 3));                // 7
+
+    return 0;
+}
+```
+
+#### Taking the Address of a Function
+
+Use `&` to get a pointer-to-function when an API explicitly expects a pointer:
+
+```luma
+let ptr: *fn (int, int) int = &add;
+```
+
+**Compatibility:** `fn(...)` and `*fn(...)` are interchangeable. You can pass a function where a pointer-to-function is expected and vice versa:
+
+```luma
+// Both work:
+thread::pthread_create(&tid, null, my_fn, arg);    // function directly
+thread::pthread_create(&tid, null, &my_fn, arg);   // address of function
+```
+
+#### Function Types as Parameters
+
+Function types can appear directly in parameter lists:
+
+```luma
+// std/thread.lx
+pub const pthread_create -> fn (
+    tid: *int,
+    attr: *void,
+    _fn: fn (*void) *void,    // function parameter
+    arg: *void
+) int;
+```
+
+#### Thread Example
+
+```luma
+@use "std_thread" as thread
+
+const worker -> fn (arg: *void) *void {
+    let n: int = cast<int>(arg);
+    outputln("working: ", n);
+    return cast<*void>(0);
+}
+
+pub const main -> fn () int {
+    let tid: int = 0;
+    thread::pthread_create(&tid, cast<*void>(0), worker, cast<*void>(42));
+
+    let ret: *void = cast<*void>(0);
+    thread::pthread_join(tid, &ret);
+    return 0;
+}
+```
+
 ---
 
 ## Name Resolution
@@ -659,15 +795,15 @@ const classify_day -> fn (day: WeekDay) void {
     switch (day) {
         WeekDay::Monday, WeekDay::Tuesday, WeekDay::Wednesday, 
         WeekDay::Thursday, WeekDay::Friday ->
-            outputln("Weekday => ", day);
+            outputln("Weekday -> ", day);
         WeekDay::Saturday, WeekDay::Sunday ->
-            outputln("Weekend => ", day);
+            outputln("Weekend -> ", day);
     }
 }
 
 pub const main -> fn () int {
-    classify_day(WeekDay::Monday);   // Output: Weekday => 1
-    classify_day(WeekDay::Saturday); // Output: Weekend => 6
+    classify_day(WeekDay::Monday);   // Output: Weekday -> 1
+    classify_day(WeekDay::Saturday); // Output: Weekend -> 6
     return 0;
 }
 ```
@@ -757,6 +893,44 @@ std_libc      - C standard library bindings
 - **Namespace isolation**: Imported modules are accessed through their aliases
 - **Static resolution**: All module access is resolved at compile time using `::`
 - **Clean syntax**: Simple `@use "module" as alias` pattern
+
+### Creating Your Own Modules
+
+**Module structure:**
+```luma
+// File: mymodule.lx
+@module "mymodule"
+
+// Private helper
+const helper -> fn (x: int) int {
+    return x * 2;
+}
+
+// Public function
+pub const process -> fn (data: *int, size: int) void {
+    loop [i: int = 0](i < size) : (++i) {
+        data[i] = helper(data[i]);
+    }
+}
+
+// Public constant
+pub const VERSION: int = 1;
+```
+
+**Using your module:**
+```luma
+// File: main.lx
+@module "main"
+
+@use "mymodule" as mm
+
+const main -> fn () int {
+    let data: [int; 5] = [1, 2, 3, 4, 5];
+    mm::process(cast<*int>(&data), 5);
+    outputln("Version: ", mm::VERSION);
+    return 0;
+}
+```
 
 ---
 
@@ -1486,6 +1660,8 @@ To work effectively with the analyzer:
 
 The analyzer is conservative - it may report false positives to prevent missed leaks. When in doubt, it will warn about potential issues rather than silently allowing them.
 
+---
+
 ## Performance
 
 Understanding performance is crucial for systems programming.
@@ -1741,6 +1917,10 @@ pub const MessageBoxA -> fn (hwnd: int, text: *byte, caption: *byte, utype: int)
     "macos"   -> { outputln("macOS"); }
     "windows" -> { outputln("Windows"); }
 }
+
+// String operations
+let num_str: *byte = string::from_int(42);
+defer free(num_str);
 ```
 
 ---
