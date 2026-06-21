@@ -1,0 +1,6 @@
+{
+  "rewrites": [
+    { "source": "/run", "destination": "https://luma-playground.fly.dev/run" },
+    { "source": "/version", "destination": "https://luma-playground.fly.dev/version" }
+  ]
+}

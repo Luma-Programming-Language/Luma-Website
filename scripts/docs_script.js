@@ -18,12 +18,21 @@ let currentView = 'docs';
 let stdLibFiles = [];
 let currentStdLibFile = null;
 
-// Auto-load docs.md on page load
+// Highlight the nav button matching the given label (robust, event-free)
+function setActiveNav(label) {
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.textContent.trim() === label);
+    });
+}
+
+// Auto-load the right view on page load, honoring ?view= for deep links
 window.addEventListener('DOMContentLoaded', () => {
-    // Get the base path (works for both local and GitHub Pages)
+    const view = new URLSearchParams(window.location.search).get('view');
+    if (view === 'install') { showInstall(); return; }
+    if (view === 'stdlib') { showStdLib(); return; }
+
+    // Default: Documentation
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-    
-    // Try multiple possible locations
     const possiblePaths = [
         basePath + 'docs.md',
         basePath + 'DOCS.md',
@@ -32,17 +41,16 @@ window.addEventListener('DOMContentLoaded', () => {
         'docs.md',
         '../docs.md'
     ];
-    
+
     tryLoadMarkdown(possiblePaths, 0);
 });
 
 function showInstall() {
     currentView = 'install';
-    
+
     // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
+    setActiveNav('Installing');
+
     // Reload docs
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
     const possiblePaths = [
@@ -58,11 +66,10 @@ function showInstall() {
 
 function showDocs() {
     currentView = 'docs';
-    
+
     // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
+    setActiveNav('Documentation');
+
     // Reload docs
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
     const possiblePaths = [
@@ -81,19 +88,17 @@ function showHome() {
     currentView = 'home';
 
     // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    setActiveNav('Home');
     window.location.href = '../index.html';
 }
 
 // Show standard library view
 async function showStdLib() {
     currentView = 'stdlib';
-    
+
     // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
-    
+    setActiveNav('Standard Library');
+
     const contentDiv = document.getElementById('content');
     contentDiv.innerHTML = '<div class="loading">Loading standard library documentation...</div>';
     

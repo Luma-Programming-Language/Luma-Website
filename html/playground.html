@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="../assets/Luma-32x32.png" sizes="32x32" type="image/png">
+    <title>Luma Playground</title>
+    <link rel="stylesheet" href="../css/theme.css">
+    <script>!function () { var e = localStorage.getItem("theme"); e || (e = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"), document.documentElement.setAttribute("data-theme", e) }();</script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <link rel="stylesheet" href="../css/docs_style.css">
+    <link rel="stylesheet" href="../css/playground.css">
+</head>
+
+<body>
+    <header class="header">
+        <div class="logo">
+            <span>LUMA</span>
+        </div>
+        <div class="header-nav">
+            <button class="nav-btn" onclick="location.href='docs.html'">Documentation</button>
+            <button class="nav-btn" onclick="location.href='docs.html?view=install'">Installing</button>
+            <button class="nav-btn" onclick="location.href='docs.html?view=stdlib'">Standard Library</button>
+            <button class="nav-btn active">Playground</button>
+            <button class="nav-btn" onclick="location.href='../index.html'">Home</button>
+        </div>
+        <div class="search-container">
+            <input type="text" id="searchInput" placeholder="Search documentation..." class="search-input">
+            <div id="searchResults" class="search-results"></div>
+        </div>
+        <div class="header-links">
+            <a href="https://github.com/TheDevConnor/Luma" target="_blank" class="header-link">
+                <span>GitHub</span>
+            </a>
+            <a href="https://discord.gg/gqnwasvqd9" target="_blank" class="header-link">
+                <span>Discord</span>
+            </a>
+        </div>
+        <div class="header-controls">
+            <button class="theme-toggle" onclick="toggleTheme()">◐</button>
+        </div>
+    </header>
+
+    <div class="pg-container">
+        <div class="pg-toolbar">
+            <label for="pgExample" style="font-size:0.85rem;color:var(--text-secondary);">Example:</label>
+            <select id="pgExample" class="pg-select">
+                <option value="hello">Hello, Luma</option>
+                <option value="fizzbuzz">FizzBuzz</option>
+                <option value="struct">Struct & methods</option>
+                <option value="cube">Spinning cube (local)</option>
+            </select>
+            <button id="pgReset" class="pg-btn">Reset</button>
+            <button id="pgRun" class="pg-btn pg-btn-run">▶ Run</button>
+            <span class="pg-version" id="pgVersion" hidden></span>
+        </div>
+
+        <div class="pg-panes">
+            <div class="pg-pane">
+                <div class="pg-pane-header">main.lx</div>
+                <div class="pg-editor">
+                    <pre aria-hidden="true"><code id="pgHighlight" class="language-luma"></code></pre>
+                    <textarea id="pgInput" spellcheck="false" autocomplete="off" autocorrect="off"
+                        autocapitalize="off"></textarea>
+                </div>
+            </div>
+
+            <div class="pg-pane">
+                <div class="pg-pane-header">
+                    Output
+                    <span id="pgStatus" class="pg-status">Ready</span>
+                </div>
+                <pre id="pgOutput"
+                    class="pg-output"><span class="pg-placeholder">Press ▶ Run (or Ctrl/Cmd+Enter) to compile and run your code.</span></pre>
+            </div>
+        </div>
+    </div>
+
+    <script src="../prism-luma.js"></script>
+    <script src="../scripts/playground.js"></script>
+    <script>
+        window.va = window.va || function () { (window.vaq = window.vaq || []).push(arguments); };
+    </script>
+    <script defer src="/_vercel/insights/script.js"></script>
+</body>
+
+</html>

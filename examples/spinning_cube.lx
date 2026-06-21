@@ -1,0 +1,136 @@
+@module "main"
+
+@use "std_math" as math
+@use "std_libc" as libc
+@use "std_memory" as mem
+@use "std_string" as string
+@use "std_termfx" as fx
+@use "std_time" as time
+
+let zBuffer: *double;
+let _buffer: *byte;
+
+let cube_width: double;
+const width: int = 160;
+const height: int = 50;
+
+const distance_from_cam: int = 70;
+
+const increment_speed: double = 0.6;
+let horizontal_offset: double;
+const k1: double = 40.0;
+
+const calculateX -> fn (i: int, j: int, k: int, A: double, B: double, C: double) double {
+  let sA: double = libc::sin(A);
+  let cA: double = libc::cos(A);
+  let sB: double = libc::sin(B);
+  let cB: double = libc::cos(B);
+  let sC: double = libc::sin(C);
+  let cC: double = libc::cos(C);
+
+  return j * sA * sB * cC - k * cA * sB * cC +
+         j * cA * sC + k * sA * sC + i * cB * cC;
+}
+
+const calculateY -> fn (i: int, j: int, k: int, A: double, B: double, C: double) double {
+  let sA: double = libc::sin(A);
+  let cA: double = libc::cos(A);
+  let sB: double = libc::sin(B);
+  let cB: double = libc::cos(B);
+  let sC: double = libc::sin(C);
+  let cC: double = libc::cos(C);
+
+  return j * cA * cC + k * sA * cC -
+         j * sA * sB * sC + k * cA * sB * sC -
+         i * cB * sC;
+}
+
+const calculateZ -> fn (i: int, j: int, k: int, A: double, B: double) double {
+  let sA: double = libc::sin(A);
+  let cA: double = libc::cos(A);
+  let sB: double = libc::sin(B);
+  let cB: double = libc::cos(B);
+
+  return k * cA * cB - j * sA * cB + i * sB;
+}
+
+const calculateForSurface -> fn (cX: double, cY: double, cZ: double,
+                                ch: byte,
+                                A: double, B: double, C: double) void {
+  let x: double = calculateX(cast<int>(cX), cast<int>(cY), cast<int>(cZ), A, B, C);
+  let y: double = calculateY(cast<int>(cX), cast<int>(cY), cast<int>(cZ), A, B, C);
+  let z: double = calculateZ(cast<int>(cX), cast<int>(cY), cast<int>(cZ), A, B) + distance_from_cam;
+
+  if (z <= 0.001) { return; }
+
+  let ooz: double = 1.0 / z;
+  if (ooz > 1000.0 || ooz < -1000.0) { return; }
+
+  let xp: int = cast<int>(width / 2 + horizontal_offset + k1 * ooz * x * 2);
+  let yp: int = cast<int>(height / 2 + k1 * ooz * y);
+
+  if (xp >= 0 && xp < width && yp >= 0 && yp < height) {
+    let idx: int = xp + yp * width;
+    if (ooz > zBuffer[idx]) {
+      zBuffer[idx] = ooz;
+      _buffer[idx] = ch;
+    }
+  }
+}
+
+
+const print_cube -> fn (A: double, B: double, C: double) void {
+  loop [cubeX: double = -cube_width](cubeX < cube_width) : (cubeX = cubeX + increment_speed) {
+    loop [cubeY: double = -cube_width](cubeY < cube_width) : (cubeY = cubeY + increment_speed) {
+      calculateForSurface(cubeX,       cubeY,       -cube_width, '@', A, B, C);
+      calculateForSurface(cube_width,  cubeY,       cubeX,       '+', A, B, C);
+      calculateForSurface(-cube_width, cubeY,       -cubeX,      '~', A, B, C);
+      calculateForSurface(-cubeX,      cubeY,       cube_width,  '#', A, B, C);
+      calculateForSurface(cubeX,       -cube_width, -cubeY,      '*', A, B, C);
+      calculateForSurface(cubeX,       cube_width,  cubeY,       '-', A, B, C);
+    }
+  }
+}
+
+
+pub const main -> fn () int {
+  zBuffer = cast<*double>(alloc(width * height * sizeof<double>));
+  _buffer = cast<*byte>(alloc(width * height));
+
+  defer { free(zBuffer); free(_buffer); }
+
+  let frame_count: int = 0;
+
+  let A: double = 1.2;
+  let B: double = 0.8;
+  let C: double = 0.4;
+
+  loop {
+    mem::memset(cast<*void>(_buffer), 32, width * height);
+    mem::memset(cast<*void>(zBuffer),  0, width * height * sizeof<double>);
+
+    cube_width = 10.0;
+    horizontal_offset = -15.0;
+    print_cube(A, B, C);  // Cube 1
+
+    output(fx::CURSOR_HOME);
+    loop [k: int = 0](k < width * height) : (++k) {
+      if (k % width == 0) { output("\n"); }
+      output(string::from_byte(_buffer[k]));
+    }
+
+    output(fx::move_cursor(1, 29), " Frame: ", frame_count, " ");
+
+    // Rotate cube
+    A = libc::fmod(A + 0.05, math::TWO_PI);
+    B = libc::fmod(B + 0.05, math::TWO_PI);
+    C = libc::fmod(C + 0.01, math::TWO_PI);
+
+    // Increment frame count
+    ++frame_count;
+
+    time::usleep(20000);
+  }
+
+  return 0;
+}

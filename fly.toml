@@ -1,0 +1,34 @@
+# Fly.io config for the Luma playground backend.
+#
+# Deploys the prebuilt GHCR image (no build needed). Fly runs Firecracker
+# micro-VMs, so the bubblewrap sandbox works — verify after deploy with:
+#   curl https://<app>.fly.dev/health      # want  "sandbox":"bwrap"
+#
+# App names are GLOBALLY unique. If "luma-playground" is taken, change `app`
+# below AND the host in vercel.json to match your chosen name.
+
+app = "luma-playground"
+primary_region = "iad"   # change to a region near you (e.g. lax, sjc, lhr, fra)
+
+[build]
+  image = "ghcr.io/luma-programming-language/luma-playground:latest"
+
+[env]
+  LUMA_RUN_TIMEOUT = "5"
+  LUMA_COMPILE_TIMEOUT = "20"
+  LUMA_MAX_CONCURRENCY = "4"
+  LUMA_SANDBOX = "auto"
+  # CORS is irrelevant when the frontend proxies same-origin via vercel.json,
+  # but harmless to leave open.
+  LUMA_CORS_ORIGINS = "*"
+
+[http_service]
+  internal_port = 8000
+  force_https = true
+  auto_stop_machines = "stop"     # scale to zero when idle
+  auto_start_machines = true
+  min_machines_running = 0
+
+[[vm]]
+  size = "shared-cpu-2x"
+  memory = "2gb"                   # LLVM compiles need headroom
