@@ -28,7 +28,9 @@ ENV LUMA_BIN=luma \
     LUMA_COMPILE_TIMEOUT=20 \
     LUMA_RUN_TIMEOUT=5 \
     LUMA_SANDBOX=auto \
-    LUMA_CORS_ORIGINS=*
+    LUMA_CORS_ORIGINS=* \
+    CC=clang \
+    PATH="/usr/local/lib/luma:${PATH}"
 
 EXPOSE 8000
 CMD ["uvicorn", "main:app", "--host", "0.0.0.0", "--port", "8000"]
