@@ -46,14 +46,16 @@ Here's a complete Luma program that demonstrates the core language features:
 ```luma
 @module "main"
 
+@use "std_libc" as libc
+
 const Point -> struct {
     x: int,
     y: int,
     
     distance_to -> fn (other: Point) float {
-        let dx: int = other.x - x;
-        let dy: int = other.y - y;
-        return sqrt(cast(dx * dx + dy * dy));
+        let dx: int = other.x - self.x;
+        let dy: int = other.y - self.y;
+        return libc::sqrt(cast<double>(dx * dx + dy * dy));
     }
 };
 
@@ -68,12 +70,12 @@ pub const main -> fn () int {
     let destination: Point = Point { x: 3, y: 4 };
     let current_status: Status = Status::Active;
     
-    outputln("Distance: ", origin.distance_to(destination));
+    output("Distance: ", origin.distance_to(destination), "\n");
     
     switch (current_status) {
-        Status::Active => outputln("System is running");
-        Status::Inactive => outputln("System is stopped");
-        Status::Pending => outputln("System is starting");
+        Status::Active   -> outputln("System is running\n");
+        Status::Inactive -> outputln("System is stopped\n");
+        Status::Pending  -> outputln("System is starting\n");
     }
     
     return 0;
