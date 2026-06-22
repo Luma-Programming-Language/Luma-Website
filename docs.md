@@ -106,7 +106,7 @@ Luma provides a straightforward type system with both primitive and compound typ
 | `float` | Floating point | 32-bit |
 | `double` | Floating point | 64-bit |
 | `bool` | Boolean | 1 byte |
-| `byte` | Unicode byteacter| 1 byte |
+| `byte` | Unicode byte| 1 byte |
 | `str` | String | Variable |
 
 ### Enumerations
@@ -975,7 +975,7 @@ Luma supports fixed-size arrays with compile-time known sizes.
 ```luma
 // Syntax: [Type; Size]
 let numbers: [int; 10];           // Array of 10 integers
-let bytes: [byte; 256];           // Array of 256 byteacters
+let bytes: [byte; 256];           // Array of 256 bytes
 let buffer: [double; 100];        // Array of 100 doubles
 
 // Constants can be arrays too
@@ -1030,7 +1030,7 @@ const main -> fn () int {
 
 ### String Literals
 
-String literals are null-terminated byteacter arrays:
+String literals are null-terminated byte arrays:
 
 ```luma
 const main -> fn () int {
@@ -1042,15 +1042,15 @@ const main -> fn () int {
 }
 ```
 
-### byteacter Literals
+### byte Literals
 
-Single byteacters use single quotes:
+Single bytes use single quotes:
 
 ```luma
 const main -> fn () int {
-    let letter: byte = 'A';           // byteacter literal
+    let letter: byte = 'A';           // byte literal
     let newline: byte = '\n';         // Escape sequence
-    let tab: byte = '\t';             // Tab byteacter
+    let tab: byte = '\t';             // Tab byte
     
     return 0;
 }
@@ -1065,7 +1065,7 @@ const main -> fn () int {
 '\\'   // Backslash
 '\''   // Single quote
 '\"'   // Double quote
-'\0'   // Null byteacter
+'\0'   // Null byte
 '\xHH' // Hexadecimal byte (e.g., '\x1b' for ESC)
 ```
 
@@ -1520,228 +1520,6 @@ const process_fast -> fn (data: *LargeStruct) void { }
 | Enum comparison | ~0 | Integer comparison |
 
 ---
-
-## Standard Library
-
-Luma's standard library provides essential functionality for systems programming.
-
-### Module: `math`
-
-Mathematical operations and constants.
-
-```luma
-@use "math" as math
-
-// Constants
-math::PI           // 3.14159...
-math::TWO_PI       // 6.28318...
-math::HALF_PI      // 1.57079...
-
-// Arithmetic
-math::add(x, y)
-math::subtract(x, y)
-math::multiply(x, y)
-math::divide(x, y)
-math::mod(x, y)
-math::power(base, exponent)
-
-// Min/Max
-math::max_size(a, b)
-math::min_size(a, b)
-
-// Trigonometry
-math::sin(angle)
-math::cos(angle)
-math::tan(angle)
-math::sec(angle)
-math::csc(angle)
-math::cot(angle)
-
-// Other
-math::fib(n, a, b)  // Fibonacci
-```
-
-**Example:**
-```luma
-@use "math" as math
-
-const main -> fn () int {
-    let angle: double = math::PI / 4.0;
-    let sine: double = math::sin(angle);
-    outputln("sin(π/4) = ", sine);
-    return 0;
-}
-```
-
-### Module: `memory`
-
-Low-level memory operations.
-
-```luma
-@use "memory" as mem
-
-// Basic operations
-mem::memcpy(dest, src, n)       // Copy memory
-mem::memcmp(a, b, n)            // Compare memory
-mem::memset(dest, value, n)     // Fill memory
-mem::memmove(dest, src, n)      // Move (handles overlap)
-mem::memzero(dest, n)           // Zero memory
-
-// Search
-mem::memchr(ptr, value, n)      // Find byte
-
-// Allocation helpers
-mem::calloc(count, size)        // Allocate + zero
-mem::realloc(ptr, new_size)     // Reallocate
-
-// Utilities
-mem::memswap(a, b, n)           // Swap regions
-mem::memrev(ptr, n)             // Reverse bytes
-mem::memcount(ptr, value, n)    // Count occurrences
-mem::memdup(src, n)             // Duplicate region
-mem::memeq(a, b, n)             // Check equality
-```
-
-**Example:**
-```luma
-@use "memory" as mem
-
-const main -> fn () int {
-    let buffer: *void = mem::calloc(10, sizeof<byte>);
-    defer free(buffer);
-    
-    mem::memset(buffer, 65, 10);  // Fill with 'A'
-    outputln("Buffer filled");
-    
-    return 0;
-}
-```
-
-### Module: `string`
-
-String manipulation functions.
-
-```luma
-@use "string" as string
-
-// Creation
-string::from_byte(c)            // Create string from byte
-string::from_int(n)             // Convert int to string
-
-// Measurement
-string::strlen(s)               // Get length
-
-// Comparison
-string::strcmp(s1, s2)          // Compare strings
-
-// Search
-string::s_byte(s, c)            // Find byteacter
-
-// Manipulation
-string::copy(dest, src)         // Copy string
-string::n_copy(dest, src, n)    // Copy n byteacters
-string::cat(dest, s1, s2)       // Concatenate
-```
-
-**Example:**
-```luma
-@use "string" as string
-
-const main -> fn () int {
-    let name: *byte = "Alice";
-    let len: int = string::strlen(name);
-    outputln("Length: ", len);
-    
-    let num_str: *byte = string::from_int(42);
-    defer free(num_str);
-    outputln("Number: ", num_str);
-    
-    return 0;
-}
-```
-
-### Module: `termfx`
-
-Terminal formatting and colors (ANSI escape codes).
-
-```luma
-@use "termfx" as fx
-
-// Basic colors
-fx::RED, fx::GREEN, fx::BLUE, fx::YELLOW
-fx::MAGENTA, fx::CYAN, fx::WHITE, fx::BLACK
-
-// Bright colors
-fx::BRIGHT_RED, fx::BRIGHT_GREEN, fx::BRIGHT_BLUE
-
-// Background colors
-fx::BG_RED, fx::BG_GREEN, fx::BG_BLUE
-
-// Text styles
-fx::BOLD, fx::UNDERLINE, fx::ITALIC
-
-// Screen control
-fx::CLEAR_SCREEN
-fx::CLEAR_LINE
-fx::CURSOR_HOME
-fx::CURSOR_HIDE
-fx::CURSOR_SHOW
-
-// Functions
-fx::fg_rgb(r, g, b)          // Custom foreground color
-fx::bg_rgb(r, g, b)          // Custom background color
-fx::move_cursor(row, col)    // Move cursor
-
-// Reset
-fx::RESET
-```
-
-**Example:**
-```luma
-@use "termfx" as fx
-
-const main -> fn () int {
-    output(fx::CLEAR_SCREEN, fx::CURSOR_HOME);
-    output(fx::BOLD, fx::RED, "ERROR: ", fx::RESET);
-    outputln("Something went wrong!");
-    output(fx::GREEN, "✓ Success", fx::RESET, "\n");
-    return 0;
-}
-```
-
-### Module: `terminal`
-
-Interactive terminal input functions.
-
-```luma
-@use "terminal" as term
-
-term::getch()              // Get single byte (no echo, no enter)
-term::getch_silent()       // Get byte silently
-term::getche()             // Get byte with echo
-term::kbhit()              // Check if key pressed
-term::wait_for_key()       // Wait for any key
-term::clear_input_buffer() // Clear input buffer
-term::getpass(prompt)      // Get password (hidden input)
-```
-
-**Example:**
-```luma
-@use "terminal" as term
-@use "string" as string
-
-const main -> fn () int {
-    outputln("Press any key...");
-    let key: byte = term::getch();
-    outputln("You pressed: ", string::from_byte(key));
-    
-    let password: *byte = term::getpass("Enter password: ");
-    defer free(password);
-    outputln("Password entered");
-    
-    return 0;
-}
-```
 
 ### Creating Your Own Modules
 
