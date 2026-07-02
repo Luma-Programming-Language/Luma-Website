@@ -2,35 +2,6 @@
 
 Luma is a statically typed, compiled programming language designed for systems programming. It combines the low-level control of C with a strong type system and modern safety features that eliminate many common runtime errors.
 
-## Table of Contents
-
-- [Language Philosophy](#language-philosophy)
-- [Quick Start](#quick-start)
-- [Type System](#type-system)
-- [Generics](#generics)
-- [Top-Level Bindings with `const`](#top-level-bindings-with-const)
-- [Variables and Mutability](#variables-and-mutability)
-- [Functions](#functions)
-- [Name Resolution](#name-resolution)
-- [Control Flow](#control-flow)
-- [Switch Statements](#switch-statements)
-- [Module System](#module-system)
-- [Built-in Functions](#built-in-functions)
-- [Type Casting System](#type-casting-system)
-- [Array Types](#array-types)
-- [String Literals and String Types](#string-literals-and-string-types)
-- [Pointer Arithmetic](#pointer-arithmetic)
-- [Visibility and Access Control](#visibility-and-access-control)
-- [Memory Management](#memory-management)
-- [Error Handling](#error-handling)
-- [Performance](#performance)
-- [Standard Library](#standard-library)
-- [Safety Features](#safety-features)
-
----
-
-## Language Philosophy
-
 Luma is built on three core principles:
 
 - **Simplicity**: Minimal syntax with consistent patterns
@@ -46,16 +17,14 @@ Here's a complete Luma program that demonstrates the core language features:
 ```luma
 @module "main"
 
-@use "std_libc" as libc
-
 const Point -> struct {
     x: int,
     y: int,
     
     distance_to -> fn (other: Point) float {
-        let dx: int = other.x - self.x;
-        let dy: int = other.y - self.y;
-        return libc::sqrt(cast<double>(dx * dx + dy * dy));
+        let dx: int = other.x - x;
+        let dy: int = other.y - y;
+        return sqrt(cast(dx * dx + dy * dy));
     }
 };
 
@@ -70,12 +39,12 @@ pub const main -> fn () int {
     let destination: Point = Point { x: 3, y: 4 };
     let current_status: Status = Status::Active;
     
-    output("Distance: ", origin.distance_to(destination), "\n");
+    outputln("Distance: ", origin.distance_to(destination));
     
     switch (current_status) {
-        Status::Active   -> outputln("System is running\n");
-        Status::Inactive -> outputln("System is stopped\n");
-        Status::Pending  -> outputln("System is starting\n");
+        Status::Active -> outputln("System is running");
+        Status::Inactive -> outputln("System is stopped");
+        Status::Pending -> outputln("System is starting");
     }
     
     return 0;
@@ -98,67 +67,115 @@ This example shows:
 Luma provides a straightforward type system with both primitive and compound types.
 
 ### Primitive Types
+```
+int      - Signed integer (64-bit)
+float    - Floating point (32-bit)
+double   - Floating point (64-bit)
+bool     - Boolean (1 byte)
+byte     - Single byte (1 byte)
+*byte    - Character pointer / C-style string
+void     - No value (used for function return types and generic pointers)
+```
 
-| Type | Description | Size |
-|------|-------------|------|
-| `int` | Signed integer | 64-bit |
-| `uint` | Unsigned integer | 64-bit | (not yet added)
-| `float` | Floating point | 32-bit |
-| `double` | Floating point | 64-bit |
-| `bool` | Boolean | 1 byte |
-| `byte` | Unicode byte| 1 byte |
-| `str` | String | Variable |
+**Note on String Types:**
+- String literals like `"hello"` are of type `*byte` (null-terminated character arrays)
+- All string operations in the standard library use `*byte`
+- There is no separate `str` type in Luma
+
+### Type Modifiers & Operators
+```
+*T       - Pointer type (declares a pointer to type T)
+[T; N]   - Array type (fixed-size array of N elements of type T)
+```
+
+**Pointer Operators:**
+```
+*expr    - Dereference operator (access value pointed to)
+&expr    - Address-of operator (get pointer to value)
+```
+
+**Example:**
+```luma
+let x: int = 42;           // x is an int
+let ptr: *int = &x;        // ptr is a pointer to int, holds address of x
+let value: int = *ptr;     // value is 42 (dereferenced ptr)
+```
 
 ### Enumerations
 
-Enums provide type-safe constants with clean syntax:
-
+Enums provide type-safe constants with underlying integer values:
 ```luma
 const Direction -> enum {
-    North,
-    South,
-    East,
-    West
+    North,    // = 0
+    South,    // = 1
+    East,     // = 2
+    West      // = 3
 };
 
 const current_direction: Direction = Direction::North;
+
+// Can cast to int if needed
+let dir_value: int = cast<int>(Direction::North);  // 0
 ```
 
 ### Structures
 
 Structures group related data with optional access control:
-
 ```luma
 const Point -> struct {
     x: int,
     y: int
 };
 
-// With explicit access modifiers
+// With explicit access modifiers and methods
 const Player -> struct {
 pub:
-    name: str,
+    name: *byte,
     score: int,
 priv:
-    internal_id: uint,
+    internal_id: int,
     
     // Methods can be defined inside structs
-    get_display_name -> fn () str {
-        return name + " (" + str(score) + " pts)";
+    get_info -> fn () void {
+        outputln("Player: ", name, " Score: ", score);
     }
 };
 ```
 
 ### Using Types
-
 ```luma
 const origin: Point = Point { x: 0, y: 0 };
+
 const player: Player = Player { 
     name: "Alice", 
     score: 100,
     internal_id: 12345 
 };
+
+// Access fields
+outputln(origin.x);           // 0
+outputln(player.name);        // Alice
+
+// Call methods
+player.get_info();            // Player: Alice Score: 100
 ```
+
+### Type Compatibility
+```luma
+// Same types
+let x: int = 42;
+let y: int = x;  // OK
+
+// Different types require explicit cast
+let f: float = cast<float>(x);  // OK
+let z: int = f;  // ERROR: must use cast<int>(f)
+
+// Pointer type safety
+let int_ptr: *int = &x;
+let void_ptr: *void = cast<*void>(int_ptr);  // Explicit cast required
+```
+
+See [Type Casting System](#type-casting-system) for full details on conversions.
 
 ---
 
@@ -247,7 +264,7 @@ const main = fn() int {
     let float_box: Box<float> = Box { value: 3.14 };
     
     // Pair with different types
-    let pair: Pair<int, str> = Pair { 
+    let pair: Pair<int, *byte> = Pair { 
         first: 1, 
         second: "hello" 
     };
@@ -276,7 +293,7 @@ const identity = fn<T>(x: T) T {
 // These calls generate separate functions in the compiled binary:
 let a: int = identity<int>(42);        // Generates identity_int
 let b: float = identity<float>(3.14);  // Generates identity_float
-let c: str = identity<str>("hello");   // Generates identity_str
+let c: *byte = identity<*byte>("hello"); // Generates identity_str
 ```
 
 ---
@@ -373,6 +390,22 @@ const print_number -> fn (n: int) void {
 };
 ```
 
+### main() with Arguments
+
+`main` can optionally accept command-line arguments:
+
+```luma
+// No arguments
+pub const main -> fn () int {
+    return 0;
+}
+
+// With argc/argv
+pub const main -> fn (argc: int, argv: **byte) int {
+    return 0;
+}
+```
+
 ### Function Calls
 
 ```luma
@@ -460,109 +493,9 @@ const find_positive -> fn (numbers: *int, size: int) int {
 };
 ```
 
-### Function Types as First-Class Values
+---
 
-Functions are first-class values — `fn` is a real type that can be stored in variables, passed as arguments, and returned.
-
-```luma
-// Declare a variable holding a function
-let op: fn (int, int) int = add;
-
-// Call through the variable
-let result: int = op(5, 3);
-```
-
-#### Function Type Syntax
-
-```
-fn (param_type, param_type, ...) return_type
-```
-
-Examples:
-
-```luma
-// Takes no args, returns void
-fn () void
-
-// Takes two ints, returns int
-fn (int, int) int
-
-// Takes a void pointer, returns a void pointer
-fn (*void) *void
-
-// Returning a pointer — * binds to the return type
-fn (int, int) *int      // function returning pointer to int
-```
-
-#### Assigning Functions to Variables
-
-A function name evaluates to its function type directly — no `&` needed:
-
-```luma
-const add -> fn (a: int, b: int) int { return a + b; }
-const sub -> fn (a: int, b: int) int { return a - b; }
-
-pub const main -> fn () int {
-    let op: fn (int, int) int = add;   // direct assignment
-    outputln(op(10, 3));                // 13
-
-    op = sub;                           // can be reassigned
-    outputln(op(10, 3));                // 7
-
-    return 0;
-}
-```
-
-#### Taking the Address of a Function
-
-Use `&` to get a pointer-to-function when an API explicitly expects a pointer:
-
-```luma
-let ptr: *fn (int, int) int = &add;
-```
-
-**Compatibility:** `fn(...)` and `*fn(...)` are interchangeable. You can pass a function where a pointer-to-function is expected and vice versa:
-
-```luma
-// Both work:
-thread::pthread_create(&tid, null, my_fn, arg);    // function directly
-thread::pthread_create(&tid, null, &my_fn, arg);   // address of function
-```
-
-#### Function Types as Parameters
-
-Function types can appear directly in parameter lists:
-
-```luma
-const std/thread.lx
-pub const pthread_create -> fn (
-    tid: *int,
-    attr: *void,
-    _fn: fn (*void) *void,    // function parameter
-    arg: *void
-) int;
-```
-
-#### Thread Example
-
-```luma
-@use "std_thread" as thread
-
-const worker -> fn (arg: *void) *void {
-    let n: int = cast<int>(arg);
-    outputln("working: ", n);
-    return cast<*void>(0);
-}
-
-pub const main -> fn () int {
-    let tid: int = 0;
-    thread::pthread_create(&tid, cast<*void>(0), worker, cast<*void>(42));
-
-    let ret: *void = cast<*void>(0);
-    thread::pthread_join(tid, &ret);
-    return 0;
-}
-```
+## Name Resolution
 
 Luma uses two distinct operators for name resolution to provide semantic clarity:
 
@@ -725,9 +658,9 @@ const WeekDay -> enum {
 const classify_day -> fn (day: WeekDay) void {
     switch (day) {
         WeekDay::Monday, WeekDay::Tuesday, WeekDay::Wednesday, 
-        WeekDay::Thursday, WeekDay::Friday =>
+        WeekDay::Thursday, WeekDay::Friday ->
             outputln("Weekday => ", day);
-        WeekDay::Saturday, WeekDay::Sunday =>
+        WeekDay::Saturday, WeekDay::Sunday ->
             outputln("Weekend => ", day);
     }
 }
@@ -746,10 +679,10 @@ When you need to handle unexpected values or want a catch-all case, use the defa
 ```luma
 const handle_status_code -> fn (code: int) void {
     switch (code) {
-        200 => outputln("OK");
-        404 => outputln("Not Found");
-        500 => outputln("Internal Server Error");
-        _   => outputln("Unknown status code");
+        200 -> outputln("OK");
+        404 -> outputln("Not Found");
+        500 -> outputln("Internal Server Error");
+        _   -> outputln("Unknown status code");
     }
 };
 ```
@@ -784,18 +717,38 @@ Use the `@use` directive to import other modules:
 ```luma
 @module "main"
 
-@use "math" as math
-@use "string" as str
+@use "std_math" as math
+@use "std_string" as string
 
 const main -> fn () int {
     // Access imported functions with namespace
-    let result: double = math::sqrt(25.0);
-    let len: int = str::strlen("hello");
+    let result: double = math::sin(math::PI / 4.0);
+    let len: int = string::strlen("hello");
     
-    outputln("Square root: ", result);
+    outputln("sin(π/4): ", result);
     outputln("Length: ", len);
     return 0;
 }
+```
+
+### Standard Library Module Names
+
+All standard library modules use the `std_` prefix:
+
+```
+std_math      - Mathematical functions and constants
+std_memory    - Low-level memory operations
+std_string    - String manipulation
+std_io        - High-level I/O with formatted output
+std_sys       - POSIX system calls (Linux/macOS)
+std_win32     - Windows Win32 API
+std_termfx    - Terminal colors and formatting
+std_terminal  - Terminal input/raw mode control
+std_time      - Time and timing operations
+std_vector    - Dynamic array
+std_arena     - Arena allocator
+std_args      - Command-line argument parsing
+std_libc      - C standard library bindings
 ```
 
 ### Module Features
@@ -804,6 +757,149 @@ const main -> fn () int {
 - **Namespace isolation**: Imported modules are accessed through their aliases
 - **Static resolution**: All module access is resolved at compile time using `::`
 - **Clean syntax**: Simple `@use "module" as alias` pattern
+
+---
+
+## Platform Directives
+
+### `@os` — Conditional Compilation
+
+The `@os` block selects code based on the target operating system. This is how the standard library handles platform differences for things like syscall numbers and flags:
+
+```luma
+@os {
+    "linux" -> {
+        pub const SYS_WRITE: int = 1;
+        pub const O_CREAT: int   = 64;
+    }
+    "macos" -> {
+        pub const SYS_WRITE: int = 4;
+        pub const O_CREAT: int   = 512;
+    }
+    "windows" -> {
+        // Windows-specific declarations...
+    }
+}
+```
+
+You can also use `@os` inline inside function bodies:
+
+```luma
+const write_out -> fn (s: *byte) int {
+    @os {
+        "linux"   -> { return __syscall__(1, 1, cast<int>(s), len); }
+        "macos"   -> { return __syscall__(4, 1, cast<int>(s), len); }
+        "windows" -> { /* use WriteFile */ }
+    }
+}
+```
+
+Valid platform strings are `"linux"`, `"macos"`, and `"windows"`.
+
+---
+
+## Foreign Function Interface (FFI)
+
+Luma can call into native shared libraries and DLLs through two complementary directives.
+
+### `@link` — Shared Library Linking (POSIX)
+
+`@link` declares that the entire module links against a shared library. Place it at the top of your module, before any function declarations:
+
+```luma
+@module "std_libc"
+
+@link("libc.so.6")
+
+pub const puts    -> fn (s: *byte) int;
+pub const printf  -> fn (fmt: *byte, val: *byte) int;
+pub const malloc  -> fn (size: int) *void;
+// ...
+```
+
+The function body is omitted — the linker resolves it from the named library at link time. Only one `@link` per module is needed; it applies to all subsequent `pub const` declarations that have no body.
+
+### `#lib_import` — Per-Function Library Override
+
+When individual functions within a module come from a *different* library than the module-level `@link`, use `#lib_import` as a per-declaration attribute:
+
+```luma
+@module "std_libc"
+
+@link("libc.so.6")
+
+// Most functions come from libc.so.6 via @link above:
+pub const malloc -> fn (size: int) *void;
+pub const free   -> fn (ptr: *void) void;
+
+// Math functions need libm — override per-function:
+#lib_import("libm.so")
+pub const sqrt -> fn (x: double) double;
+
+#lib_import("libm.so")
+pub const pow  -> fn (base: double, exp: double) double;
+
+#lib_import("libm.so")
+pub const sin  -> fn (x: double) double;
+```
+
+Place `#lib_import(...)` on the line immediately before the `pub const` it applies to.
+
+### `#dll_import` — Windows DLL Imports
+
+On Windows, use `#dll_import` instead. It accepts the DLL name and an optional calling convention:
+
+```luma
+#dll_import("kernel32.dll", callconv: "stdcall")
+pub const CreateFileA -> fn (
+    lpFileName: *byte,
+    dwDesiredAccess: int,
+    dwShareMode: int,
+    lpSecurityAttributes: *void,
+    dwCreationDisposition: int,
+    dwFlagsAndAttributes: int,
+    hTemplateFile: int
+) int;
+
+#dll_import("kernel32.dll", callconv: "stdcall")
+pub const WriteFile -> fn (
+    hFile: int,
+    lpBuffer: *void,
+    nNumberOfBytesToWrite: int,
+    lpNumberOfBytesWritten: *int,
+    lpOverlapped: *void
+) int;
+```
+
+`#dll_import` can also appear inside `@os { "windows" -> { ... } }` blocks so the same source file compiles cross-platform:
+
+```luma
+@os {
+    "windows" -> {
+        #dll_import("kernel32.dll", callconv: "stdcall")
+        pub const GetStdHandle -> fn (nStdHandle: int) int;
+    }
+}
+```
+
+### Using libc
+
+The `std_libc` module wraps the C standard library (stdio, stdlib, string, and math) and is the easiest way to call into libc from Luma:
+
+```luma
+@module "main"
+
+@use "std_libc" as c
+
+pub const main -> fn () int {
+    c::puts("hello from libc");
+
+    let n: int = c::atoi("42");
+    let r: double = c::sqrt(144.0);
+
+    return 0;
+}
+```
 
 ---
 
@@ -1042,15 +1138,15 @@ const main -> fn () int {
 }
 ```
 
-### byte Literals
+### Character Literals
 
-Single bytes use single quotes:
+Single characters use single quotes:
 
 ```luma
 const main -> fn () int {
-    let letter: byte = 'A';           // byte literal
+    let letter: byte = 'A';           // Character literal
     let newline: byte = '\n';         // Escape sequence
-    let tab: byte = '\t';             // Tab byte
+    let tab: byte = '\t';             // Tab character
     
     return 0;
 }
@@ -1065,7 +1161,7 @@ const main -> fn () int {
 '\\'   // Backslash
 '\''   // Single quote
 '\"'   // Double quote
-'\0'   // Null byte
+'\0'   // Null character
 '\xHH' // Hexadecimal byte (e.g., '\x1b' for ESC)
 ```
 
@@ -1241,7 +1337,7 @@ const main -> fn () int {
     *data = 42;
     
     consume_buffer(data);  // Ownership transferred
-    // Error: data was freed inside consume_buffer
+    // Note: do not use `data` after this point
     
     return 0;
 }
@@ -1521,46 +1617,6 @@ const process_fast -> fn (data: *LargeStruct) void { }
 
 ---
 
-### Creating Your Own Modules
-
-**Module structure:**
-```luma
-// File: mymodule.lx
-@module "mymodule"
-
-// Private helper
-const helper -> fn (x: int) int {
-    return x * 2;
-}
-
-// Public function
-pub const process -> fn (data: *int, size: int) void {
-    loop [i: int = 0](i < size) : (++i) {
-        data[i] = helper(data[i]);
-    }
-}
-
-// Public constant
-pub const VERSION: int = 1;
-```
-
-**Using your module:**
-```luma
-// File: main.lx
-@module "main"
-
-@use "mymodule" as mm
-
-const main -> fn () int {
-    let data: [int; 5] = [1, 2, 3, 4, 5];
-    mm::process(cast<*int>(&data), 5);
-    outputln("Version: ", mm::VERSION);
-    return 0;
-}
-```
-
----
-
 ## Safety Features
 
 Luma provides several safety features to prevent common bugs:
@@ -1610,6 +1666,24 @@ struct     enum       pub        priv       cast
 sizeof     alloc      free       switch     fn
 ```
 
+### Directives
+
+```
+@module "name"              // Declare module name
+@use "name" as alias        // Import module
+@os { "linux" -> { } }      // Platform-conditional code
+@link("lib.so")             // Link against shared library (module-level)
+```
+
+### Attributes
+
+```
+#returns_ownership          // Function returns allocated memory (caller must free)
+#takes_ownership            // Function takes ownership of a pointer argument
+#lib_import("lib.so")       // Per-function library override (POSIX)
+#dll_import("dll", callconv: "stdcall")  // Per-function DLL import (Windows)
+```
+
 ### Operators
 
 ```
@@ -1625,7 +1699,7 @@ Access:      .   ::  []  *  &
 
 ```
 int     double    bool    *T      [T; N]
-uint    float     byte    str     void
+uint    float     byte    void
 ```
 
 ### Common Patterns
@@ -1646,12 +1720,27 @@ if (ptr == cast<*T>(0)) {
 }
 
 // Module usage
-@use "module" as m
+@use "std_module" as m
 let x: int = m::function();
 
-// String operations
-let s: *byte = string::from_int(42);
-defer free(s);
+// FFI — link a shared library (POSIX)
+@link("libsomething.so")
+pub const some_fn -> fn (x: int) int;
+
+// FFI — per-function library override
+#lib_import("libm.so")
+pub const sqrt -> fn (x: double) double;
+
+// FFI — Windows DLL
+#dll_import("user32.dll", callconv: "stdcall")
+pub const MessageBoxA -> fn (hwnd: int, text: *byte, caption: *byte, utype: int) int;
+
+// Platform-conditional code
+@os {
+    "linux"   -> { outputln("Linux"); }
+    "macos"   -> { outputln("macOS"); }
+    "windows" -> { outputln("Windows"); }
+}
 ```
 
 ---
@@ -1664,6 +1753,8 @@ Luma is a modern systems programming language that provides:
 - **Safety**: Static analysis and ownership tracking
 - **Performance**: Zero-cost abstractions and predictable behavior
 - **Control**: Manual memory management with safety nets
+- **Interoperability**: First-class FFI via `@link`, `#lib_import`, and `#dll_import`
+- **Portability**: `@os` blocks for clean cross-platform code
 
 The language is designed for programmers who want the performance and control of C with modern safety features and ergonomics.
 
