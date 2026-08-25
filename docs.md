@@ -23,10 +23,10 @@ pub:
     y: int,
 
     distance_to -> fn (other: Point) float {
-        let dx: int = other.x - x;
-        let dy: int = other.y - y;
-        return sqrt(cast(dx * dx + dy * dy));
-    }
+        let dx: int = other.x - self.x;
+        let dy: int = other.y - self.y;
+        return cast<float>(sqrt(cast<double>(dx * dx + dy * dy)));
+    },
 };
 
 const Status -> enum {
@@ -70,6 +70,7 @@ Luma provides a straightforward type system with both primitive and compound typ
 ### Primitive Types
 ```
 int      - Signed integer (64-bit)
+uint     - Unsigned integer (64-bit)
 float    - Floating point (32-bit)
 double   - Floating point (64-bit)
 bool     - Boolean (1 byte)
@@ -143,11 +144,6 @@ pub:
     },
 priv:
     internal_id: int,
-    
-    // Methods can be defined inside structs
-    get_info -> fn () void {
-        outputln("Player: ", name, " Score: ", score);
-    }
 };
 ```
 
@@ -168,6 +164,189 @@ outputln(player.name);        // Alice
 // Call methods
 player.get_info();            // Player: Alice Score: 100
 ```
+
+### Pointers to Structs
+
+Unlike C, there's no separate `->` operator — `.` works the same way whether you have a struct value or a pointer to one, auto-dereferencing either way:
+
+```luma
+const move_point -> fn (p: *Point, dx: int, dy: int) void {
+    p.x = p.x + dx;   // not p->x
+    p.y = p.y + dy;
+}
+
+pub const main -> fn (argc: int, argv: **byte) int {
+    let p: Point = Point { x: 1, y: 2 };
+    let ptr: *Point = &p;
+
+    move_point(ptr, 10, 10);
+    outputln(p.x, " ", p.y);     // 11 12
+    outputln(ptr.x, " ", ptr.y); // same values, through the pointer
+
+    return 0;
+}
+```
+
+This is also why a method's `self` (always `*Self` under the hood) reads no differently from a plain struct field access — `self.x` inside a method and `p.x` on a local value use identical syntax.
+
+### Struct Composition vs. Embedding
+
+A struct-typed field declared normally (without `...`) is composition, not embedding — it's a nested value, and its fields are **not** promoted. You reach them through the field name, same as any other member:
+
+```luma
+const Line -> struct {
+pub:
+    start: Point,
+    end: Point,
+};
+
+pub const main -> fn (argc: int, argv: **byte) int {
+    let line: Line = Line {
+        start: Point { x: 0, y: 0 },
+        end: Point { x: 5, y: 5 },
+    };
+
+    outputln(line.start.x);  // 0 — through `.start`, not promoted
+    outputln(line.end.y);    // 5
+    return 0;
+}
+```
+
+Compare this to [Struct Embedding](#struct-embedding) below, where `...Point,` would make `line.x` and `line.y` valid directly. Use composition when the nested struct is conceptually a distinct part (a `Line` *has a* `start` and an `end`); use embedding when the outer struct *is a kind of* the inner one and should expose its interface directly (a `Player` *is an* `Entity`).
+
+**Structs don't support `==`** — comparing two struct values field-by-field isn't generated automatically; compare the fields you care about individually instead.
+
+### Struct Embedding
+
+A struct can embed another by value with `...Type,` as a member. The embedded struct's fields and methods are promoted onto the outer struct — accessible and initializable as if they were declared directly on it, with no runtime indirection (the embedded value is laid out inline, not behind a pointer):
+
+```luma
+const Entity -> struct {
+pub:
+    x: float,
+    y: float,
+
+    move -> fn (dx: float, dy: float) void {
+        self.x = self.x + dx;
+        self.y = self.y + dy;
+    },
+};
+
+const Player -> struct {
+pub:
+    ...Entity,
+    name: *byte,
+
+    // Defining `move` here shadows Entity's — a direct member always wins
+    // over a promoted one of the same name.
+    move -> fn (dx: float, dy: float) void {
+        self.x = self.x + (dx * 2.0);
+        self.y = self.y + (dy * 2.0);
+    },
+};
+
+pub const main -> fn (argc: int, argv: **byte) int {
+    // `x`/`y` are promoted fields — the literal initializes them exactly
+    // like `name`, even though they live on the embedded `Entity`.
+    let player: Player = Player { x: 0.0, y: 0.0, name: "Connor" };
+    player.move(10.0, 5.0);           // Player's own move — doubled deltas
+    outputln(player.x, " ", player.y);
+    return 0;
+}
+```
+
+Promoted members resolve through as many embedding levels as needed, and work identically through a pointer (`p.move(...)` where `p: *Player`).
+
+An override can still reach the shadowed base method explicitly, by naming the embedded type directly with `.` — `Entity.move(dx, dy)` inside `Player::move` calls `Entity`'s own implementation on `self`'s embedded `Entity`, bypassing the override it's written inside of:
+
+```luma
+const Player -> struct {
+pub:
+    ...Entity,
+    name: *byte,
+
+    move -> fn (dx: float, dy: float) void {
+        Entity.move(dx, dy);  // delegates to Entity's own move, unmodified
+    },
+};
+```
+
+This only resolves inside a method whose owning struct actually embeds the named type somewhere; `Entity.move(...)` written elsewhere doesn't mean anything.
+
+### Static Methods
+
+A method declared `static` has no implicit `self` and is called on the type itself with `::`, not on an instance with `.` — useful for constructors and other functions that logically belong to a type but don't operate on an existing value of it:
+
+```luma
+const Point -> struct {
+pub:
+    x: float,
+    y: float,
+
+    static origin -> fn () Point {
+        return Point { x: 0.0, y: 0.0 };
+    },
+
+    static at -> fn (x: float, y: float) Point {
+        return Point { x: x, y: y };
+    },
+
+    move -> fn (dx: float, dy: float) void {
+        self.x = self.x + dx;
+        self.y = self.y + dy;
+    },
+};
+
+pub const main -> fn (argc: int, argv: **byte) int {
+    let a: Point = Point::origin();   // static — no instance needed
+    let b: Point = Point::at(3.0, 4.0);
+    a.move(1.0, 1.0);                 // instance method — needs `a`
+    return 0;
+}
+```
+
+Inside a `static` method's body, `self` isn't in scope — there's no instance to refer to. `static` is only valid on a method (`name -> fn (...) T { ... }`), not on a data field.
+
+`#returns_ownership`/`#takes_ownership` can be combined with `static` in either order:
+
+```luma
+#returns_ownership
+static create -> fn (...) *T { ... }
+```
+
+### Heap-Allocated Structs
+
+A `static` "constructor" returning a pointer, paired with an instance "destructor" method, is the idiomatic way to give a struct manual, class-like lifetime management — the same ownership rules from [Memory Management](#memory-management) apply, just wrapped in methods instead of loose functions:
+
+```luma
+const Person -> struct {
+pub:
+    name: *byte,  // owned
+    age: int,
+
+    #returns_ownership
+    static create -> fn (name: *byte, age: int) *Person {
+        let p: *Person = cast<*Person>(alloc(sizeof<Person>));
+        p.name = name;
+        p.age = age;
+        return p;
+    },
+
+    destroy -> fn () void {
+        free(self.name);
+    },
+};
+
+pub const main -> fn (argc: int, argv: **byte) int {
+    let alice: *Person = Person::create(cast<*byte>(alloc(6)), 30);
+    defer { alice.destroy(); free(alice); }
+
+    outputln(alice.age);
+    return 0;
+}
+```
+
+`destroy` only frees what the struct itself owns (`name`) — the struct's own allocation (`alice` the pointer) is a separate responsibility, freed by whoever called `create`, same as any other `#returns_ownership` pointer. Nothing in Luma calls `destroy` automatically; there's no destructor-on-scope-exit — pair it with `defer` explicitly, as shown.
 
 ### Type Compatibility
 ```luma
@@ -400,25 +579,17 @@ A function declaration's closing `}` never takes a trailing `;` — that's only 
 
 ### main()
 
-`main` currently must take `argc`/`argv` — a zero-parameter `pub const main -> fn () int { ... }` parses, but fails at the C compile step (its generated prototype and definition disagree on signature):
+`main` can declare zero, one, or two parameters — `argc: int` and `argv: **byte`, in that order. Its C-level signature is always `int main(int, char**)` regardless; declaring fewer just leaves the rest unnamed on the Luma side.
 
 ```luma
-pub const main -> fn (argc: int, argv: **byte) int {
-    return 0;
-}
-```
-
-### main() with Arguments
-
-`main` can optionally accept command-line arguments:
-
-```luma
-// No arguments
 pub const main -> fn () int {
     return 0;
 }
 
-// With argc/argv
+pub const main -> fn (argc: int) int {
+    return 0;
+}
+
 pub const main -> fn (argc: int, argv: **byte) int {
     return 0;
 }
@@ -508,7 +679,7 @@ const find_positive -> fn (numbers: *int, size: int) int {
         }
     }
     return -1;  // Not found
-};
+}
 ```
 
 ---
@@ -757,18 +928,24 @@ Use the `@use` directive to import other modules:
 ```luma
 @module "main"
 
-@use "std_math" as math
-@use "std_string" as string
+@use "std_libc" as c
+@use "std_cstring" as string
 
 pub const main -> fn (argc: int, argv: **byte) int {
     // Access imported functions with namespace
-    let result: double = math::sin(math::PI / 4.0);
+    let result: double = c::sqrt(16.0);
     let len: int = string::strlen("hello");
-    
-    outputln("sin(π/4): ", result);
+
+    outputln("sqrt(16): ", result);
     outputln("Length: ", len);
     return 0;
 }
+```
+
+`@use` only declares the dependency — it doesn't locate the file. Every module you `@use` also has to be passed to the compiler explicitly with `-l`:
+
+```
+luma main.lx -l std/libc.lx std/cstring.lx -name main
 ```
 
 ### Standard Library Module Names
@@ -778,7 +955,8 @@ All standard library modules use the `std_` prefix:
 ```
 std_math      - Mathematical functions and constants
 std_memory    - Low-level memory operations
-std_string    - String manipulation
+std_cstring   - Null-terminated (*byte) string utilities: strlen, strcmp, copy, dup, ...
+std_string    - Growable String struct built on top of std_cstring
 std_io        - High-level I/O with formatted output
 std_sys       - POSIX system calls (Linux/macOS)
 std_win32     - Windows Win32 API
@@ -786,9 +964,11 @@ std_termfx    - Terminal colors and formatting
 std_terminal  - Terminal input/raw mode control
 std_time      - Time and timing operations
 std_vector    - Dynamic array
+std_hashmap   - Hash map
 std_arena     - Arena allocator
 std_args      - Command-line argument parsing
 std_libc      - C standard library bindings
+std_thread    - Threading
 ```
 
 ### Module Features
@@ -931,7 +1111,7 @@ The `std_libc` module wraps the C standard library (stdio, stdlib, string, and m
 
 @use "std_libc" as c
 
-pub const main -> fn () int {
+pub const main -> fn (argc: int, argv: **byte) int {
     c::puts("hello from libc");
 
     let n: int = c::atoi("42");
@@ -1185,7 +1365,7 @@ const main -> fn (argc: int, argv: **byte) int {
 Single characters use single quotes:
 
 ```luma
-const main -> fn () int {
+const main -> fn (argc: int, argv: **byte) int {
     let letter: byte = 'A';           // Character literal
     let newline: byte = '\n';         // Escape sequence
     let tab: byte = '\t';             // Tab character
@@ -1204,7 +1384,6 @@ const main -> fn () int {
 '\''   // Single quote
 '\"'   // Double quote
 '\0'   // Null character
-'\xHH' // Hexadecimal byte (e.g., '\x1b' for ESC)
 ```
 
 `\xHH` (hexadecimal byte, e.g. `"\x1b"` for ESC) is supported in **string** literals but not in single-quoted character literals yet — `let esc: byte = '\x1b';` fails to parse; use a string (`"\x1b"`) and index into it, or write the decimal/`cast<byte>(...)` form instead.
@@ -1709,24 +1888,6 @@ loop       break      continue   return     defer
 struct     enum       pub        priv       cast
 sizeof     alloc      free       switch     fn
 using      static     input      system     as
-```
-
-### Directives
-
-```
-@module "name"              // Declare module name
-@use "name" as alias        // Import module
-@os { "linux" -> { } }      // Platform-conditional code
-@link("lib.so")             // Link against shared library (module-level)
-```
-
-### Attributes
-
-```
-#returns_ownership          // Function returns allocated memory (caller must free)
-#takes_ownership            // Function takes ownership of a pointer argument
-#lib_import("lib.so")       // Per-function library override (POSIX)
-#dll_import("dll", callconv: "stdcall")  // Per-function DLL import (Windows)
 ```
 
 ### Directives
