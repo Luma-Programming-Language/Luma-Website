@@ -4,7 +4,7 @@ Luma is a self-hosted compiler — it transpiles to C and just needs a C compile
 
 ## Quick Start (prebuilt binary)
 
-Grab the archive for your platform from the [latest release](releases/v0.3.4.md).
+Grab the archive for your platform from the [latest release](https://github.com/Luma-Programming-Language/Luma/releases/latest).
 
 ### Linux / macOS
 
