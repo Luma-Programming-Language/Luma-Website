@@ -1,21 +1,21 @@
 :root {
-    --keyword: #b45309;
-    --type: #0e7490;
-    --string: #15803d;
-    --number: #a16207;
-    --comment: #a8a29e;
-    --function: #7c3aed;
-    --module: #be123c;
-    --accent: #d97706;
+    --keyword: #f57d26;
+    --type: #3a94c5;
+    --string: #8da101;
+    --number: #dfa000;
+    --comment: #9da9a0;
+    --function: #3a94c5;
+    --module: #f85552;
+    --accent: #1985a1;
 }
 
 [data-theme="dark"] {
-    --keyword: #f59e0b;
-    --type: #2dd4bf;
-    --string: #fbbf24;
-    --number: #a3e635;
-    --comment: #78716c;
-    --function: #fcd34d;
-    --module: #fb7185;
-    --accent: #f59e0b;
+    --keyword: #e69875;
+    --type: #7fbbb3;
+    --string: #a7c080;
+    --number: #dbbc7f;
+    --comment: #859289;
+    --function: #7fbbb3;
+    --module: #e67e80;
+    --accent: #53a9c4;
 }

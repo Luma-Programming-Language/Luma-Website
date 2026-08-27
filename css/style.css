@@ -5,15 +5,19 @@
 }
 
 :root {
-    --bg: #faf6f0;
-    --text: #292524;
-    --border: #d6d3d1;
+    --bg: #dcdcdd;
+    --bg-secondary: #d3d1d4;
+    --text: #3a3f45;
+    --text-secondary: #5c646b;
+    --border: #b8b6ba;
 }
 
 [data-theme="dark"] {
-    --bg: #1c1917;
-    --text: #f5f5f4;
-    --border: #57534e;
+    --bg: #313438;
+    --bg-secondary: #3b3f45;
+    --text: #dcdcdd;
+    --text-secondary: #9aa1a8;
+    --border: #4c5c68;
 }
 
 body {
@@ -171,7 +175,7 @@ nav a:hover {
 
 .subtitle {
     font-size: 1.25rem;
-    color: #78716c;
+    color: var(--text-secondary);
     margin-bottom: 2rem;
     max-width: 600px;
     line-height: 1.6;
@@ -217,7 +221,7 @@ nav a:hover {
 /* Book layout: side-by-side on wide screens, stacked on smaller */
 .book-layout {
     display: flex;
-    gap: 6rem;
+    gap: 3rem;
     align-items: flex-start;
 }
 
@@ -227,7 +231,7 @@ nav a:hover {
 }
 
 .book-examples {
-    width: 400px;
+    width: 480px;
     flex-shrink: 0;
     position: relative;
 }
@@ -250,7 +254,7 @@ nav a:hover {
 }
 
 .book-examples pre {
-    background: var(--bg);
+    background: var(--bg-secondary);
     border: 2px solid var(--border);
     padding: 1.5rem;
     overflow-x: auto;

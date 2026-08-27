@@ -76,26 +76,26 @@ pre[class*="language-"] {
 }
 
 :root {
-    --bg-primary: #faf6f0;
-    --bg-secondary: #f0ebe3;
-    --bg-tertiary: #e8e0d5;
-    --text-primary: #292524;
-    --text-secondary: #78716c;
-    --accent-hover: #b45309;
-    --border: #d6d3d1;
-    --code-bg: #f0ebe3;
+    --bg-primary: #dcdcdd;
+    --bg-secondary: #d3d1d4;
+    --bg-tertiary: #c5c3c6;
+    --text-primary: #3a3f45;
+    --text-secondary: #5c646b;
+    --accent-hover: #11657d;
+    --border: #b8b6ba;
+    --code-bg: #d3d1d4;
     --sidebar-width: 280px;
 }
 
 [data-theme="dark"] {
-    --bg-primary: #1c1917;
-    --bg-secondary: #292524;
-    --bg-tertiary: #3f3a36;
-    --text-primary: #f5f5f4;
-    --text-secondary: #a8a29e;
-    --accent-hover: #fbbf24;
-    --border: #57534e;
-    --code-bg: #3f3a36;
+    --bg-primary: #313438;
+    --bg-secondary: #3b3f45;
+    --bg-tertiary: #46494c;
+    --text-primary: #dcdcdd;
+    --text-secondary: #9aa1a8;
+    --accent-hover: #53a9c4;
+    --border: #4c5c68;
+    --code-bg: #2a2d30;
 }
 
 body {
@@ -190,7 +190,6 @@ body {
     display: flex;
     gap: 0.5rem;
     align-items: center;
-    margin-left: auto;
 }
 
 .theme-toggle,
@@ -199,9 +198,9 @@ body {
     background: transparent;
     border: 2px solid var(--border);
     color: var(--text-primary);
-    padding: 0.4rem 0.9rem;
+    padding: 0.4rem 1rem;
     cursor: pointer;
-    font-size: 0.85rem;
+    font-size: 0.9rem;
     font-weight: 500;
     font-family: inherit;
     transition: all 0.2s;
@@ -223,7 +222,6 @@ body {
 .search-container {
     position: relative;
     margin-left: auto;
-    margin-right: 0.5rem;
     width: 280px;
 }
 

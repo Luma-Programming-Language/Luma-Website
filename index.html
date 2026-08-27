@@ -20,7 +20,6 @@
             <a href="#" class="logo">LUMA</a>
             <nav>
                 <a href="html/docs.html">Docs</a>
-                <a href="html/playground.html">Playground</a>
                 <a href="https://github.com/TheDevConnor/Luma" target="_blank">GitHub</a>
                 <button class="theme-btn" id="themeBtn">◐</button>
             </nav>
@@ -35,31 +34,41 @@
                     <h2>Hello, World!</h2>
                     <pre><code class="language-luma">@module "main"
 
-pub const main -> fn () int {
-    output("Hello, Luma!\n");
+pub const main -> fn (argc: int, argv: **byte) int {
+    outputln("Hello, Luma!");
     return 0;
 }</code></pre>
                 </div>
                 <h2>Data Types</h2>
-                <pre><code class="language-luma">const Point -> struct {
+                <pre><code class="language-luma">@module "main" 
+const Point -> struct {
+pub:
     x: int,
     y: int,
 };
 
-const main -> fn () int {
-    let p: Point = Point { x: 3, y: 4 };
-    output("(", p.x, ", ", p.y, ")\n");
+const origin: Point = Point { x: 3, y: 4 };
+
+pub const main -> fn (argc: int, argv: **byte) int {
+    outputln("(", origin.x, ", ", origin.y, ")");
     return 0;
 }</code></pre>
 
-                <h2>Generics (Not Added Yet)</h2>
-                <pre><code class="language-luma">const max = fn&lt;T&gt;(a: T, b: T) T {
-    if (a > b) { return a; }
-    return b;
+                <h2>Enums &amp; Switch</h2>
+                <pre><code class="language-luma">@module "main" 
+const Status -> enum {
+    Active,
+    Inactive,
+    Pending,
 };
 
-const main -> fn () int {
-    output(max&lt;int&gt;(42, 17), "\n");
+pub const main -> fn (argc: int, argv: **byte) int {
+    let s: Status = Status::Active;
+    switch using Status(s) {
+        Active -> outputln("Running");
+        Inactive -> outputln("Stopped");
+        Pending -> outputln("Starting");
+    }
     return 0;
 }</code></pre>
             </aside>
@@ -70,7 +79,8 @@ const main -> fn () int {
                     <div class="hero-content">
                         <h1>Low-level programming, simplified.</h1>
                         <p class="subtitle">
-                            Luma is a compiled language designed to be fast, expressive, and easy to use.
+                            A low-level compiled language for people who want C's control without giving up their
+                            afternoon to memory bugs.
                         </p>
                         <div class="cta">
                             <a href="https://github.com/TheDevConnor/Luma/releases/latest" class="btn btn-primary">Download</a>
@@ -86,16 +96,16 @@ const main -> fn () int {
 
                 <section class="features">
                     <div class="feature">
-                        <h3>Explicit Control</h3>
-                        <p>Manual memory management and predictable low-level behavior.</p>
+                        <h3>Ownership Hints, Not Lifetimes</h3>
+                        <p>Annotate with <code>#takes_ownership</code> or <code>#returns_ownership</code> no lifetime syntax, no borrow checker.</p>
                     </div>
                     <div class="feature">
-                        <h3>Static Verification</h3>
-                        <p>Detect use-after-free, double-free, and leaks at compile time.</p>
+                        <h3>Compile-Time Memory Analysis</h3>
+                        <p>The static analyzer flags use-after-free, double-frees, and leaks during the typechecking process.</p>
                     </div>
                     <div class="feature">
-                        <h3>Zero Runtime Cost</h3>
-                        <p>Analysis happens during compilation with no runtime overhead.</p>
+                        <h3>No Runtime Cost</h3>
+                        <p>No garbage collector, no reference counting. All analysis happens at compile time, with zero overhead.</p>
                     </div>
                 </section>
             </div>
