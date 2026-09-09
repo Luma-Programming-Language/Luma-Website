@@ -367,7 +367,7 @@ See [Type Casting System](#type-casting-system) for full details on conversions.
 
 ---
 
-## Generics (Not yet supported)
+## Generics
 
 Luma supports generic programming through templates, enabling you to write code that works with multiple types while maintaining type safety and zero-cost abstractions.
 
