@@ -4,22 +4,22 @@ Luma is a self-hosted compiler — it transpiles to C and just needs a C compile
 
 ## Quick Start (prebuilt binary)
 
-Grab the archive for your platform from the [latest release](https://github.com/Luma-Programming-Language/Luma/releases/latest).
+Grab the archive for your platform from the [latest release](releases/v0.3.5.md).
 
-### Linux / macOS
+### Linux / macOS (Prebuilt Binary)
 
 ```bash
-tar -xzf luma-v0.3.4-linux-x86_64.tar.gz    # or luma-v0.3.4-macos-x86_64.tar.gz
-cd luma-v0.3.4-linux-x86_64
+tar -xzf luma-v0.3.5-linux-x86_64.tar.gz    # or luma-v0.3.5-macos-x86_64.tar.gz
+cd luma-v0.3.5-linux-x86_64
 
 sudo ./install.sh   # system-wide, requires sudo
 # or
 ./install.sh        # user-local install, no sudo needed
 ```
 
-### Windows
+### Windows (Prebuilt Binary)
 
-1. Extract `luma-v0.3.4-windows-x86_64.zip`.
+1. Extract `luma-v0.3.5-windows-x86_64.zip`.
 2. Run `install.bat` — as Administrator for a system-wide install, or without for a user-local one.
 
 ## Building from Source
@@ -36,11 +36,18 @@ sudo ./scripts/install.sh
 
 ### Cross-compiling
 
-`luma` can target another OS directly, as long as [`zig`](https://ziglang.org) is on your `PATH` — it's the actual C toolchain used to build the foreign binary:
+Windows, from Linux, with [mingw-w64](https://www.mingw-w64.org) installed (`mingw-w64-gcc` on Arch, `gcc-mingw-w64-x86-64` on Debian/Ubuntu) — a real GNU cross-compiler, no separate build system or language involved:
 
 ```bash
 ./scripts/cross-build.sh windows64 dist/luma
-./scripts/cross-build.sh macos     dist/luma
+```
+
+macOS has no equivalent cross-compiler package (only osxcross, which needs Apple's SDK extracted from a real Xcode install). `scripts/transpile.sh` emits the C without trying to link it, for an actual Mac to compile with its own `cc`:
+
+```bash
+./scripts/transpile.sh macos dist/luma.c
+# ... on an actual Mac ...
+cc dist/luma.c -lm -o luma
 ```
 
 ---
@@ -61,7 +68,7 @@ If none of the three has the file, you'll get a "module not found — was its fi
 
 If you'd rather not run the installer script:
 
-### Linux / macOS
+### Linux / macOS (Manual Installation)
 
 **System-wide:**
 
@@ -83,9 +90,9 @@ cp -r std/* ~/.luma/std/
 export PATH="$PATH:$HOME/.local/bin"
 ```
 
-### Windows
+### Windows (Manual Installation)
 
-1. Create `C:\Program Files\luma\bin` and `\std` (system-wide) or `%USERPROFILE%\.luma\bin` and `\std` (user-local).
+1. Create `C:\Program Files\luma\bin` and `C:\Program Files\luma\std` (system-wide) or `%USERPROFILE%\.luma\bin` and `%USERPROFILE%\.luma\std` (user-local).
 2. Copy `luma.exe` into the `bin` directory.
 3. Copy the contents of `std/` into the `std` directory.
 4. Add the `bin` directory to your `PATH` environment variable.
@@ -98,15 +105,15 @@ export PATH="$PATH:$HOME/.local/bin"
 luma --version
 ```
 
-```
-Luma Compiler v0.3.4
+```text
+Luma Compiler v0.3.5
 ```
 
 ---
 
 ## Troubleshooting
 
-**"module not found — was its file passed with -l?"**
+### "module not found — was its file passed with -l?"
 
 Either the file wasn't passed with `-l` at all, or it's not sitting in any of the three [Standard Library Paths](#standard-library-paths) tiers above. Double-check the install actually landed where you expect (`ls ~/.luma/std/` or `ls /usr/local/lib/luma/std/`), and that the path you're passing to `-l` matches what's actually on disk relative to your current directory.
 
@@ -119,7 +126,7 @@ export PATH="$PATH:$HOME/.local/bin"        # user-local install
 export PATH="$PATH:/usr/local/bin"          # system-wide install (usually already on PATH)
 ```
 
-**PATH issues (Windows)**
+### PATH issues (Windows)
 
 Search "Environment Variables" in the Start menu, edit your PATH, and add `%USERPROFILE%\.luma\bin` or `C:\Program Files\luma\bin`, then restart your terminal.
 
