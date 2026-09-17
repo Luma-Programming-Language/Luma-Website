@@ -18,6 +18,9 @@ let currentView = 'docs';
 let stdLibFiles = [];
 let currentStdLibFile = null;
 
+const DOCS_URL = 'https://raw.githubusercontent.com/Luma-Programming-Language/Luma/refs/heads/self-hosted/docs/docs.md';
+const INSTALL_URL = 'https://raw.githubusercontent.com/Luma-Programming-Language/Luma/refs/heads/self-hosted/docs/INSTALL.md';
+
 // Highlight the nav button matching the given label (robust, event-free)
 function setActiveNav(label) {
     document.querySelectorAll('.nav-btn').forEach(btn => {
@@ -34,6 +37,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Default: Documentation
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
     const possiblePaths = [
+        DOCS_URL,
         basePath + 'docs.md',
         basePath + 'DOCS.md',
         basePath + 'README.md',
@@ -54,6 +58,7 @@ function showInstall() {
     // Reload docs
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
     const possiblePaths = [
+        INSTALL_URL,
         basePath + 'install.md',
         basePath + 'INSTALL.md',
         './install.md',
@@ -73,6 +78,7 @@ function showDocs() {
     // Reload docs
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
     const possiblePaths = [
+        DOCS_URL,
         basePath + 'docs.md',
         basePath + 'DOCS.md',
         basePath + 'README.md',
@@ -216,7 +222,7 @@ async function tryLoadMarkdown(paths, index) {
                     Current URL: <code>${window.location.href}</code>
                 </p>
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                    Make sure <code>docs.md</code> is in the same directory as <code>index.html</code>
+                    Make sure <code>docs.md</code> is reachable on GitHub
                 </p>
             </div>
         `;
@@ -258,10 +264,10 @@ async function loadFromUrl(url) {
             <div style="padding: 2rem; text-align: center;">
                 <h2 style="color: #f85149;">❌ Failed to load documentation</h2>
                 <p style="color: var(--text-secondary); margin: 1rem 0;">
-                    Could not find <code>docs.md</code> file.
+                    Could not reach GitHub to load <code>docs.md</code>.
                 </p>
                 <p style="color: var(--text-secondary); font-size: 0.9rem;">
-                    Make sure <code>docs.md</code> is in the same directory as <code>index.html</code>
+                    Make sure <code>docs.md</code> is reachable on GitHub
                 </p>
             </div>
         `;
@@ -309,6 +315,19 @@ function parseAndRenderMarkdown(markdown) {
     // Render content
     const contentDiv = document.getElementById('content');
     contentDiv.innerHTML = html;
+
+    // Docs are streamed live from GitHub, so local copies no longer exist.
+    // Rewrite relative .md links to point back at the source docs instead
+    // of 404ing on the site (skips absolute URLs and in-page anchors).
+    contentDiv.querySelectorAll('a[href]').forEach((a) => {
+        const href = a.getAttribute('href');
+        if (!href) return;
+        if (/^[a-z][a-z0-9+.-]*:/i.test(href)) return;
+        if (href.startsWith('#')) return;
+        if (/\.md(#|$)/.test(href)) {
+            a.href = 'https://github.com/Luma-Programming-Language/Luma/blob/refs/heads/self-hosted/docs/' + href.replace(/^\.\//, '');
+        }
+    });
     
     // Highlight code blocks
     contentDiv.querySelectorAll('pre code').forEach((block) => {

@@ -43,7 +43,7 @@ async function fetchLatestVersion() {
     const versionText = document.getElementById('versionText');
 
     try {
-        const response = await fetch('https://api.github.com/repos/TheDevConnor/Luma/releases/latest');
+        const response = await fetch('https://api.github.com/repos/Luma-Programming-Language/Luma/releases/latest');
         const data = await response.json();
 
         if (data.tag_name) {

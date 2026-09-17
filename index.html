@@ -20,7 +20,7 @@
             <a href="#" class="logo">LUMA</a>
             <nav>
                 <a href="html/docs.html">Docs</a>
-                <a href="https://github.com/TheDevConnor/Luma" target="_blank">GitHub</a>
+                <a href="https://github.com/Luma-Programming-Language/Luma" target="_blank">GitHub</a>
                 <button class="theme-btn" id="themeBtn">◐</button>
             </nav>
         </header>
@@ -34,7 +34,7 @@
                     <h2>Hello, World!</h2>
                     <pre><code class="language-luma">@module "main"
 
-pub const main -> fn (argc: int, argv: **byte) int {
+pub const main -> fn (argc: i64, argv: **byte) i64 {
     outputln("Hello, Luma!");
     return 0;
 }</code></pre>
@@ -43,13 +43,13 @@ pub const main -> fn (argc: int, argv: **byte) int {
                 <pre><code class="language-luma">@module "main" 
 const Point -> struct {
 pub:
-    x: int,
-    y: int,
+    x: i64,
+    y: i64,
 };
 
 const origin: Point = Point { x: 3, y: 4 };
 
-pub const main -> fn (argc: int, argv: **byte) int {
+pub const main -> fn (argc: i64, argv: **byte) i64 {
     outputln("(", origin.x, ", ", origin.y, ")");
     return 0;
 }</code></pre>
@@ -62,7 +62,7 @@ const Status -> enum {
     Pending,
 };
 
-pub const main -> fn (argc: int, argv: **byte) int {
+pub const main -> fn (argc: i64, argv: **byte) i64 {
     let s: Status = Status::Active;
     switch using Status(s) {
         Active -> outputln("Running");
@@ -83,9 +83,9 @@ pub const main -> fn (argc: int, argv: **byte) int {
                             afternoon to memory bugs.
                         </p>
                         <div class="cta">
-                            <a href="https://github.com/TheDevConnor/Luma/releases/latest" class="btn btn-primary">Download</a>
+                            <a href="https://github.com/Luma-Programming-Language/Luma/releases/latest" class="btn btn-primary">Download</a>
                             <a href="html/docs.html" class="btn">Documentation</a>
-                            <a href="https://github.com/TheDevConnor/Luma/releases" class="version-badge loading"
+                            <a href="https://github.com/Luma-Programming-Language/Luma/releases" class="version-badge loading"
                                 id="versionBadge">
                                 <span class="version-prefix">Latest:</span>
                                 <span class="version-text" id="versionText">Loading...</span>
@@ -115,7 +115,7 @@ pub const main -> fn (argc: int, argv: **byte) int {
         <footer>
             <p>© 2025 Luma</p>
             <div class="social">
-                <a href="https://github.com/TheDevConnor/Luma" target="_blank" title="GitHub">
+                <a href="https://github.com/Luma-Programming-Language/Luma" target="_blank" title="GitHub">
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                         <path
                             d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22" />
