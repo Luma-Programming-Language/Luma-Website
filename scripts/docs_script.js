@@ -15,8 +15,8 @@ marked.setOptions({
 
 // State management for current view
 let currentView = 'docs';
-let stdLibFiles = [];
-let currentStdLibFile = null;
+let docFiles = [];
+let currentDocFile = null;
 
 const DOCS_URL = 'https://raw.githubusercontent.com/Luma-Programming-Language/Luma/refs/heads/self-hosted/docs/docs.md';
 const INSTALL_URL = 'https://raw.githubusercontent.com/Luma-Programming-Language/Luma/refs/heads/self-hosted/docs/INSTALL.md';
@@ -33,6 +33,7 @@ window.addEventListener('DOMContentLoaded', () => {
     const view = new URLSearchParams(window.location.search).get('view');
     if (view === 'install') { showInstall(); return; }
     if (view === 'stdlib') { showStdLib(); return; }
+    if (view === 'api') { showApiDocs(); return; }
 
     // Default: Documentation
     const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
@@ -98,45 +99,45 @@ function showHome() {
     window.location.href = '../index.html';
 }
 
-// Show standard library view
-async function showStdLib() {
-    currentView = 'stdlib';
+// Show a directory of markdown docs from GitHub (Standard Library & Luma API)
+async function loadDocDirectory(viewName, sectionName, apiUrl) {
+    currentView = viewName;
 
     // Update nav buttons
-    setActiveNav('Standard Library');
+    setActiveNav(sectionName);
 
     const contentDiv = document.getElementById('content');
-    contentDiv.innerHTML = '<div class="loading">Loading standard library documentation...</div>';
+    contentDiv.innerHTML = '<div class="loading">Loading ' + sectionName.toLowerCase() + ' documentation...</div>';
     
     try {
         // Fetch the list of markdown files from GitHub API
-        const response = await fetch('https://api.github.com/repos/Luma-Programming-Language/Luma-std/contents/docs');
+        const response = await fetch(apiUrl);
         
         if (!response.ok) {
             throw new Error(`GitHub API error: ${response.status}`);
         }
         
         const files = await response.json();
-        stdLibFiles = files.filter(file => 
+        docFiles = files.filter(file => 
             file.name.endsWith('.md') && 
             file.name !== 'README.md' && 
             file.name !== 'main.md'
         );
         
-        if (stdLibFiles.length === 0) {
+        if (docFiles.length === 0) {
             throw new Error('No markdown files found in the docs directory');
         }
         
-        // Build sidebar for stdlib
-        buildStdLibSidebar();
+        // Build sidebar for the section
+        buildDocSidebar(sectionName);
         
         // Load the first file by default
-        await loadStdLibFile(stdLibFiles[0]);
+        await loadDocFile(docFiles[0]);
         
     } catch (error) {
         contentDiv.innerHTML = `
             <div style="padding: 2rem; text-align: center;">
-                <h2 style="color: #f85149;">❌ Failed to load standard library documentation</h2>
+                <h2 style="color: #f85149;">❌ Failed to load ${sectionName.toLowerCase()} documentation</h2>
                 <p style="color: var(--text-secondary); margin: 1rem 0;">
                     ${error.message}
                 </p>
@@ -148,31 +149,47 @@ async function showStdLib() {
     }
 }
 
-// Build sidebar for standard library files
-function buildStdLibSidebar() {
+function showStdLib() {
+    loadDocDirectory(
+        'stdlib',
+        'Standard Library',
+        'https://api.github.com/repos/Luma-Programming-Language/Luma-std/contents/docs'
+    );
+}
+
+function showApiDocs() {
+    loadDocDirectory(
+        'api',
+        'Luma API',
+        'https://api.github.com/repos/Luma-Programming-Language/Luma/contents/docs/api?ref=self-hosted'
+    );
+}
+
+// Build sidebar for a directory of doc files
+function buildDocSidebar(sectionName) {
     const toc = document.getElementById('toc');
     
-    const tocHTML = stdLibFiles.map(file => {
+    const tocHTML = docFiles.map(file => {
         const name = file.name.replace('.md', '');
-        return `<li><a href="#" onclick="loadStdLibFileByName('${file.name}'); return false;">${name}</a></li>`;
+        return `<li><a href="#" onclick="loadDocFileByName('${file.name}'); return false;">${name}</a></li>`;
     }).join('');
     
     toc.innerHTML = `
-        <div class="sidebar-section-header">Standard Library</div>
+        <div class="sidebar-section-header">${sectionName}</div>
         <ul>${tocHTML}</ul>
     `;
 }
 
-// Load a standard library file by name
-async function loadStdLibFileByName(fileName) {
-    const file = stdLibFiles.find(f => f.name === fileName);
+// Load a doc file by name
+async function loadDocFileByName(fileName) {
+    const file = docFiles.find(f => f.name === fileName);
     if (file) {
-        await loadStdLibFile(file);
+        await loadDocFile(file);
     }
 }
 
-// Load a specific standard library file
-async function loadStdLibFile(file) {
+// Load a specific doc file
+async function loadDocFile(file) {
     const contentDiv = document.getElementById('content');
     contentDiv.innerHTML = '<div class="loading">Loading...</div>';
     
@@ -185,7 +202,7 @@ async function loadStdLibFile(file) {
         }
         
         const markdown = await response.text();
-        currentStdLibFile = file;
+        currentDocFile = file;
         
         // Parse and render the markdown
         parseAndRenderMarkdown(markdown);
@@ -366,8 +383,8 @@ function parseAndRenderMarkdown(markdown) {
 }
 
 function generateTOC() {
-    // Skip TOC generation for stdlib view - it's already built
-    if (currentView === 'stdlib') {
+    // Skip TOC generation for directory views - the sidebar is already built
+    if (currentView === 'stdlib' || currentView === 'api') {
         return;
     }
     
